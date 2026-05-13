@@ -1,0 +1,72 @@
+services:
+  # Service 1: Our Flask Web App
+  web:
+    build: .
+    env_file:
+      - .env
+    restart: always
+    environment:
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/')\" || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - .:/app
+      - ./static_data:/app/static
+
+  # Service 2: Our PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: always
+    healthcheck:
+      # FIX: Added -d to check the correct database, not default to username
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - "5433:5432"
+
+  # Service 3: Our Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "11000:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # Service 4: pgAdmin (Database GUI)
+  adminer:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    mem_limit: 1g
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=myuser@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=mypassword
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

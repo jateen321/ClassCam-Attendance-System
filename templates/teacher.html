@@ -1,0 +1,3196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0d0d10;
+            --surface-alt: #141418;
+            --muted: #9ca3af;
+            --text: #f5f5f6;
+            --border: #1d1d24;
+            --primary: #a855f7;
+            --primary-strong: #9333ea;
+            --secondary: #1f1f24;
+            --secondary-strong: #16161a;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            /* Alert Variables (Dark Mode Default) */
+            --alert-success-bg: rgba(34, 197, 94, 0.15);
+            --alert-success-text: #bbf7d0;
+            --alert-danger-bg: rgba(239, 68, 68, 0.18);
+            --alert-danger-text: #fecdd3;
+            --alert-warning-bg: rgba(245, 158, 11, 0.18);
+            --alert-warning-text: #fef3c7;
+            /* Button Text Variables (Dark Mode Default) */
+            --btn-success-text: #052e16;
+            /* Dark text on bright green */
+            --btn-danger-text: #ffffff;
+        }
+
+        body.light {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-alt: #f4f5f7;
+            --muted: #475569;
+            --text: #0f172a;
+            --border: #e5e7eb;
+            --primary: #4f46e5;
+            --primary-strong: #4338ca;
+            --secondary: #e5e7eb;
+            --secondary-strong: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+            /* Alert Variables (Light Mode) */
+            --alert-success-bg: rgba(34, 197, 94, 0.2);
+            --alert-success-text: #15803d;
+            --alert-danger-bg: rgba(239, 68, 68, 0.2);
+            --alert-danger-text: #b91c1c;
+            --alert-warning-bg: rgba(245, 158, 11, 0.2);
+            --alert-warning-text: #b45309;
+            /* Button Text Variables (Light Mode) */
+            --btn-success-text: #ffffff;
+            /* White text on darker green */
+            --btn-danger-text: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .form-card {
+            background-color: var(--surface);
+            border-radius: 0.75rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 600px;
+            width: 100%;
+            transition: all 0.3s ease-in-out;
+            margin: 2rem auto;
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-strong);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-strong);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--btn-success-text);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .btn-success:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--btn-danger-text);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--surface-alt);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--surface);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            background: var(--surface-alt);
+            color: var(--text);
+        }
+
+        #send_email_notifications+label {
+            color: var(--muted);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .alert-success {
+            background-color: var(--alert-success-bg);
+            color: var(--alert-success-text);
+        }
+
+        .alert-danger {
+            background-color: var(--alert-danger-bg);
+            color: var(--alert-danger-text);
+        }
+
+        .alert-warning {
+            background-color: var(--alert-warning-bg);
+            color: var(--alert-warning-text);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 0.5rem;
+            border: 2px solid var(--border);
+            background-color: #000;
+            margin-bottom: 1rem;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .photo-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.85rem;
+            padding: 0.8rem;
+            border: 1px dashed var(--border);
+            border-radius: 0.5rem;
+            min-height: 78px;
+            background: var(--surface-alt);
+        }
+
+        .photo-thumbnail-container {
+            position: relative;
+        }
+
+        .photo-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            display: block;
+        }
+
+        .remove-photo-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: rgba(239, 68, 68, 0.85);
+            color: white;
+            border-radius: 9999px;
+            height: 1.25rem;
+            width: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        .remove-photo-btn:hover {
+            background-color: #ef4444;
+        }
+
+        .annotation-image {
+            width: auto;
+            max-width: 100%;
+            max-height: 480px;
+            display: block;
+            margin: 1rem auto;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .photo-review-shell {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--surface-alt);
+            max-height: 480px;
+            max-width: 100%;
+            width: max-content;
+            margin: 1rem auto;
+        }
+
+        .photo-review-shell img,
+        .photo-review-shell video {
+            max-height: 480px;
+            max-width: 100%;
+            width: auto;
+            display: block;
+        }
+
+        .review-asset-carousel {
+            display: grid;
+            gap: 0.65rem;
+        }
+
+        .review-asset-stage {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.9rem;
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+            min-height: 14rem;
+            aspect-ratio: 4 / 3;
+        }
+
+        .review-asset-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.24s ease;
+            display: grid;
+        }
+
+        .review-asset-slide.is-active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .review-asset-slide img,
+        .review-asset-slide video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .review-asset-placeholder {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 1rem;
+            text-align: center;
+            color: var(--muted);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+        }
+
+        .review-asset-controls {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            pointer-events: none;
+        }
+
+        .review-asset-control {
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.45rem;
+            height: 2.45rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: rgba(15, 15, 20, 0.78);
+            color: var(--text);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        .review-asset-control:hover:not(:disabled) {
+            transform: translateY(-1px);
+            background: rgba(15, 15, 20, 0.92);
+        }
+
+        .review-asset-control:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .review-asset-control svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .review-asset-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .review-asset-caption {
+            font-size: 0.84rem;
+            color: var(--muted);
+            min-height: 1.2rem;
+        }
+
+        .review-asset-counter {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .photo-box {
+            position: absolute;
+            border: 2px solid #22c55e;
+            background: rgba(34, 197, 94, 0.12);
+            border-radius: 0.35rem;
+        }
+
+        .photo-box.pending-add {
+            border-style: dashed;
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.18);
+        }
+
+        .photo-box.pending-remove {
+            border-style: dashed;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        .photo-box-label {
+            position: absolute;
+            top: -1.6rem;
+            left: 0;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .review-card {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            background: var(--surface);
+        }
+
+        .section-panel {
+            --section-accent: var(--primary);
+            --section-accent-glow: rgba(168, 85, 247, 0.14);
+            --section-accent-soft: rgba(168, 85, 247, 0.16);
+            --section-accent-border: rgba(168, 85, 247, 0.22);
+            margin-top: 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, var(--section-accent-glow), transparent 34%),
+                linear-gradient(180deg, var(--surface-alt), var(--surface));
+            box-shadow: var(--shadow);
+        }
+
+        .section-panel-cyan {
+            --section-accent: #22d3ee;
+            --section-accent-glow: rgba(34, 211, 238, 0.16);
+            --section-accent-soft: rgba(34, 211, 238, 0.14);
+            --section-accent-border: rgba(34, 211, 238, 0.22);
+        }
+
+        .section-panel-green {
+            --section-accent: #22c55e;
+            --section-accent-glow: rgba(34, 197, 94, 0.15);
+            --section-accent-soft: rgba(34, 197, 94, 0.14);
+            --section-accent-border: rgba(34, 197, 94, 0.22);
+        }
+
+        .section-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .section-panel-header.is-collapsible {
+            cursor: pointer;
+        }
+
+        .section-panel-header.is-collapsible:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .section-panel-header.is-collapsible:focus-visible {
+            outline: 2px solid var(--section-accent);
+            outline-offset: -2px;
+        }
+
+        .section-panel-lead {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            min-width: 0;
+        }
+
+        .section-panel-kicker {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--section-accent);
+            font-weight: 700;
+        }
+
+        .section-panel-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.25;
+        }
+
+        .section-panel-subtitle {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            max-width: 52rem;
+        }
+
+        .section-panel-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .section-panel-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem 0.78rem;
+            border-radius: 999px;
+            background: var(--section-accent-soft);
+            border: 1px solid var(--section-accent-border);
+            color: var(--text);
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .section-panel-chevron {
+            width: 1.15rem;
+            height: 1.15rem;
+            color: var(--muted);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .section-panel-content {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .section-panel-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .section-panel-grid.two {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .section-panel-grid.three {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        }
+
+        .section-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .section-block {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            background: var(--surface-alt);
+        }
+
+        .section-counter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .camera-stage video {
+            width: 100%;
+            max-width: 540px;
+            aspect-ratio: 4 / 3;
+            background: #000;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .section-inline-row {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .section-divider {
+            margin-top: 1.6rem;
+            padding-top: 1.35rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .photo-gallery-shell {
+            margin-top: 1rem;
+            min-height: 5rem;
+        }
+
+        .gallery-photo-card {
+            margin-top: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            background: var(--surface);
+            overflow: hidden;
+        }
+
+        .gallery-photo-card:first-child {
+            margin-top: 0;
+        }
+
+        .gallery-photo-meta {
+            padding: 0.95rem 1rem 1rem;
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        .gallery-photo-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .gallery-photo-subtitle {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .gallery-review-list {
+            display: grid;
+            gap: 0.6rem;
+        }
+
+        .gallery-review-event {
+            padding: 0.75rem 0.85rem;
+            border-radius: 0.85rem;
+            border: 1px solid var(--border);
+            background: var(--surface-alt);
+        }
+
+        .gallery-review-event strong {
+            display: block;
+            font-size: 0.84rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .gallery-review-event p {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+
+            .section-panel-header,
+            .review-accordion-summary {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .section-panel-meta,
+            .review-accordion-meta {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        .review-card-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            margin-top: 1rem;
+        }
+
+        .review-meta {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .review-change-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 0.9rem;
+        }
+
+        .review-change-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface-alt);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .review-change-chip.add {
+            border-color: rgba(245, 158, 11, 0.35);
+            background: rgba(245, 158, 11, 0.14);
+        }
+
+        .review-change-chip.delete {
+            border-color: rgba(239, 68, 68, 0.35);
+            background: rgba(239, 68, 68, 0.14);
+        }
+
+        .review-editor-list {
+            display: grid;
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .review-editor-card {
+            padding: 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 0.9rem;
+            background: var(--surface-alt);
+        }
+
+        .review-editor-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+        }
+
+        .review-editor-grid {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        }
+
+        .review-coordinate-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .review-coordinate-field input {
+            width: 100%;
+            padding: 0.55rem 0.7rem;
+            border-radius: 0.7rem;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .review-accordion {
+            margin-top: 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            background:
+                radial-gradient(circle at top right, rgba(168, 85, 247, 0.14), transparent 32%),
+                linear-gradient(180deg, var(--surface-alt), var(--surface));
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .review-accordion-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.1rem 1.25rem;
+            cursor: pointer;
+            list-style: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .review-accordion-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .review-accordion-summary:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .review-accordion-lead {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .review-accordion-kicker {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .review-accordion-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .review-accordion-subtitle {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .review-accordion-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .review-accordion-content {
+            padding: 0 1.25rem 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .review-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            min-width: 2.4rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(168, 85, 247, 0.18);
+            color: var(--text);
+            font-size: 0.84rem;
+            font-weight: 700;
+            border: 1px solid rgba(168, 85, 247, 0.22);
+        }
+
+        .review-count-badge.is-empty {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--muted);
+            border-color: rgba(148, 163, 184, 0.16);
+        }
+
+        .review-count-badge.is-error {
+            background: rgba(239, 68, 68, 0.18);
+            color: #fecaca;
+            border-color: rgba(239, 68, 68, 0.22);
+        }
+
+        .review-count-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.8;
+        }
+
+        .review-accordion-chevron {
+            width: 1.15rem;
+            height: 1.15rem;
+            color: var(--muted);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .review-accordion[open] .review-accordion-chevron {
+            transform: rotate(180deg);
+            color: var(--text);
+        }
+
+        .review-accordion[open] .review-accordion-summary {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .admin-section {
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+        }
+
+        .admin-list {
+            width: 100%;
+        }
+
+        .admin-collapsible {
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            border-radius: 0.9rem;
+            background: var(--surface-alt);
+            overflow: hidden;
+        }
+
+        .admin-collapsible-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.1rem;
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+        }
+
+        .admin-collapsible-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .admin-collapsible-summary:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .admin-collapsible-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.25rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .admin-collapsible-body {
+            padding: 0 1.1rem 1rem;
+            max-height: 22rem;
+            overflow-y: auto;
+        }
+
+        .admin-list-item {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+        }
+
+        .admin-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .subject-card {
+            background-color: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-top: 1px dashed var(--border);
+        }
+
+        .latest-photos-section {
+            margin-top: 2.5rem;
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+        }
+
+
+
+        /* Navbar Styles */
+        .navbar {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            justify-self: start;
+        }
+
+        .nav-brand:hover {
+            color: var(--primary-strong);
+        }
+
+        .nav-center {
+            justify-self: center;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-self: end;
+        }
+
+        .theme-toggle {
+            background: var(--surface-alt);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #go-top-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--primary);
+            color: var(--text);
+            border: none;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        #go-top-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #go-top-btn:hover {
+            transform: translateY(-3px);
+            background-color: var(--primary-strong);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen dark" style="padding: 0;">
+    <script>
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+    </script>
+
+
+    <nav class="navbar">
+        <a href="{{ url_for('teacher.teacher_portal') }}" class="nav-brand">ClassCam Attendance System</a>
+
+        <div class="nav-center">
+            {% if current_user.is_authenticated and session.get('user_type') == 'teacher' %}
+            <button id="nav-mark-attendance-btn" class="btn-primary btn-small whitespace-nowrap">Mark
+                Attendance</button>
+            {% endif %}
+        </div>
+
+        <div class="nav-actions">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">☀️</button>
+
+            {% if current_user.is_authenticated and session.get('user_type') == 'teacher' %}
+            <!-- Profile Photo (Default Icon for Teachers) -->
+            <button id="open-profile-photo-btn" class="profile-photo-container"
+                style="display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; overflow: hidden; background: var(--surface-alt); border: 1px solid var(--border); cursor: pointer; padding: 0;">
+                {% if current_user.profile_photo_url %}
+                <img src="{{ current_user.profile_photo_url }}" alt="Profile Photo"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    style="width: 1.5rem; height: 1.5rem; color: var(--muted);">
+                    <path fill-rule="evenodd"
+                        d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                        clip-rule="evenodd" />
+                </svg>
+                {% endif %}
+            </button>
+            <!-- Moved Actions -->
+            <button id="open-change-password-btn" class="btn-outline btn-small whitespace-nowrap">Change
+                Password</button>
+            <a href="{{ url_for('main.logout') }}" class="btn-outline btn-small whitespace-nowrap"
+                style="color: var(--danger); border-color: var(--danger);">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Go to Top Button -->
+    <button id="go-top-btn" aria-label="Go to Top" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+    </button>
+
+    <div
+        class="{% if current_user.is_authenticated and session.get('user_type') == 'teacher' %}max-w-7xl mx-auto p-6 bg-[var(--surface)] border border-[var(--border)] rounded-xl mt-6{% else %}form-card{% endif %}">
+
+        <!-- Flashed Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %} {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+        {% endfor %} {% endif %}
+        {% endwith %}
+
+        <!-- Check if user is logged in -->
+        {% if current_user.is_authenticated and session.get('user_type') == 'teacher' %}
+
+        <!-- === LOGGED IN VIEW === -->
+        <div id="dashboard-view">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold">Welcome, {{ current_user.role }}</h1>
+                <p class="text-gray-700">{{ current_user.username }} ({{ current_user.email }})</p>
+            </div>
+
+            <!-- ================== -->
+            <!-- ATTENDANCE SECTION (For Profs, TAs & Admin) -->
+            <!-- ================== -->
+            <div class="section-panel section-panel-cyan">
+                <div class="section-panel-header is-collapsible"
+                    onclick="toggleCollapse('attendance-content', this); setupCameraIfNeeded();"
+                    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault(); toggleCollapse('attendance-content', this); setupCameraIfNeeded();}"
+                    role="button" tabindex="0" aria-controls="attendance-content" aria-expanded="false">
+                    <div class="section-panel-lead">
+                        <span class="section-panel-kicker">Capture</span>
+                        <h2 class="section-panel-title">Mark Attendance</h2>
+                        <p class="section-panel-subtitle">Capture live classroom photos or upload images for the
+                            selected subject, date, and session type.</p>
+                    </div>
+                    <div class="section-panel-meta">
+                        <span class="section-panel-tag">Live</span>
+                        <svg class="section-panel-chevron transform transition-transform" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div id="attendance-content" class="section-panel-content hidden">
+                    <div id="message-area-attendance" class="text-center mb-5"></div>
+
+                    {% if attendance_subjects %}
+                    <form id="attendance-form" class="space-y-5">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="section-panel-grid three">
+                            <div>
+                                <label for="subject_id" class="section-label">Subject</label>
+                                <select id="subject_id" name="subject_id" class="input-field" required>
+                                    <option value="" disabled selected>-- Select a subject --</option>
+                                    {% for subject in attendance_subjects %}
+                                    <option value="{{ subject.id }}"
+                                        data-default-session-type="{{ subject.default_session_type }}">
+                                        {{ subject.name }} ({{ subject.code }}) - {{ subject.academic_year }} / {{
+                                        subject.semester }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="attendance_date" class="section-label">Attendance Date</label>
+                                <input type="date" id="attendance_date" name="attendance_date" class="input-field"
+                                    required>
+                            </div>
+                            <div>
+                                <label for="session_type" class="section-label">Session Type</label>
+                                <select id="session_type" name="session_type" class="input-field">
+                                    <option value="class" selected>Class</option>
+                                    <option value="lecture">Lecture</option>
+                                    <option value="tutorial">Tutorial</option>
+                                    <option value="practical">Practical</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="section-block">
+                            <label class="section-label">Live Camera Feed</label>
+                            <div class="camera-stage mt-3">
+                                <video id="video-feed" autoplay playsinline></video>
+                                <canvas id="canvas" class="hidden"></canvas>
+                            </div>
+                            <div class="section-panel-grid three mt-4">
+                                <button type="button" id="capture-btn" class="btn-secondary w-full">Capture
+                                    Photo</button>
+                                <label class="btn-outline w-full text-center cursor-pointer">
+                                    <input type="file" id="upload-photos" accept="image/*" multiple class="hidden">
+                                    Upload Photos
+                                </label>
+                                <label class="btn-outline w-full text-center cursor-pointer">
+                                    <input type="file" id="upload-attendance-csv" accept=".csv,text/csv" class="hidden">
+                                    Upload CSV
+                                </label>
+                            </div>
+                            <p id="attendance-csv-name" class="text-sm text-gray-500 mt-3">
+                                No CSV selected. Use `student_roll_number` and `status`, or just `roll_number` to mark
+                                listed students present.
+                            </p>
+                        </div>
+                        <div class="section-block">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <label class="section-label">Captured Photos</label>
+                                <span class="section-counter"><span id="photo-count">0</span> ready</span>
+                            </div>
+                            <div id="photo-strip" class="photo-strip"></div>
+                        </div>
+                        <div class="section-block section-inline-row">
+                            <div class="flex items-center">
+                                <input type="checkbox" id="send_email_notifications" name="send_email_notifications"
+                                    class="h-4 w-4 rounded"
+                                    style="background-color: var(--surface-alt); border-color: var(--border);">
+                                <label for="send_email_notifications" class="ml-2 block text-sm">Send attendance
+                                    mail</label>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" id="submit-attendance-btn" class="btn-primary w-full">
+                                <span id="submit-btn-text">Submit Attendance</span>
+                                <svg id="spinner" class="animate-spin ml-3 h-5 w-5 text-white hidden"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                    <!-- Area to display annotated photos AFTER submission -->
+                    <div id="annotation-area" class="section-divider">
+                        <h3 class="text-xl font-semibold text-center mb-4 hidden">Processed Photos (Just Submitted)</h3>
+                        <div id="annotation-container" class="space-y-4"></div>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500">You are not assigned to any subjects for taking attendance.</p>
+                    {% if current_user.role == 'TA' %}
+                    <p class="text-center text-gray-500">Please ask your Professor to add you to a subject and approve
+                        your assignment.</p>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Section to display Attendance photos -->
+            <div class="section-panel section-panel-green">
+                <div class="section-panel-header">
+                    <div class="section-panel-lead">
+                        <span class="section-panel-kicker">Browse</span>
+                        <h2 class="section-panel-title">Attendance Photos</h2>
+                        <p class="section-panel-subtitle">Review processed attendance images by subject and date without
+                            leaving the staff portal.</p>
+                    </div>
+                    <div class="section-panel-meta">
+                        <span class="section-panel-tag">Gallery</span>
+                    </div>
+                </div>
+                <div class="section-panel-content">
+                    <div class="section-panel-grid two">
+                        <div>
+                            <label for="photo-subject-select" class="section-label">Subject</label>
+                            <select id="photo-subject-select" class="input-field flex-grow">
+                                <option value="">-- Select Subject --</option>
+                                {% for subject in all_subjects_for_photo_display %}
+                                <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.code }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="photo-date-select" class="section-label">Date</label>
+                            <select id="photo-date-select" class="input-field flex-grow" disabled>
+                                <option value="">-- Select Date --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="latest-annotation-container" class="space-y-4 photo-gallery-shell">
+                        <p class="text-center text-gray-500">Select a subject and date to view photos.</p>
+                    </div>
+                </div>
+            </div>
+
+            {% if current_user.is_authenticated and current_user.is_approved %}
+            <details id="bounding-box-review-panel" class="review-accordion">
+                <summary class="review-accordion-summary">
+                    <div class="review-accordion-lead">
+                        <span class="review-accordion-kicker">Review Queue</span>
+                        <span class="review-accordion-title">Pending Bounding Box Reviews</span>
+                        <span class="review-accordion-subtitle">Student add and delete requests awaiting TA, Professor,
+                            or Admin approval.</span>
+                    </div>
+                    <div class="review-accordion-meta">
+                        <span id="bounding-box-review-count" class="review-count-badge is-empty">
+                            <span class="review-count-number">0</span>
+                            <span class="review-count-label">pending</span>
+                        </span>
+                        <svg class="review-accordion-chevron" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </summary>
+                <div class="review-accordion-content">
+                    <div id="bounding-box-review-container" class="space-y-4">
+                        <p class="text-center text-gray-500">Loading pending review queue...</p>
+                    </div>
+                </div>
+            </details>
+            {% endif %}
+
+
+            <!-- ================== -->
+            <!-- ADMIN DASHBOARD    -->
+            <!-- ================== -->
+            {% if current_user.role == 'Admin' %}
+            <div class="admin-section">
+                <h2 class="text-2xl font-semibold text-center mb-4">Admin Dashboard</h2>
+
+                <!-- Staff Approvals -->
+                <h3 class="text-xl font-medium mb-3">Pending Staff Approvals</h3>
+                <div class="admin-list">
+                    {% if pending_teachers %}
+                    {% for teacher in pending_teachers %}
+                    <div class="admin-list-item">
+                        <div>
+                            <p class="font-medium">{{ teacher.username }} <span class="text-sm text-gray-500">({{
+                                    teacher.role }})</span></p>
+                            <p class="text-sm text-gray-500">{{ teacher.email }}</p>
+                        </div>
+                        <div class="button-group">
+                            <form action="{{ url_for('teacher.approve_teacher', teacher_id=teacher.id) }}"
+                                method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-success">Approve</button>
+                            </form>
+                            <form action="{{ url_for('teacher.deny_teacher', teacher_id=teacher.id) }}" method="POST"
+                                onsubmit="return confirm('Deny and delete this request?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-danger">Deny</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-gray-500">No pending staff approvals.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Manage Approved Teachers -->
+                <h3 class="text-xl font-medium mb-3 mt-8">Manage Approved Staff</h3>
+                {% if approved_teachers %}
+                <details class="admin-collapsible">
+                    <summary class="admin-collapsible-summary">
+                        <span>Show Approved Staff</span>
+                        <span class="admin-collapsible-count">{{ approved_teachers|length }}</span>
+                    </summary>
+                    <div class="admin-collapsible-body">
+                        <div class="admin-list">
+                            {% for teacher in approved_teachers %}
+                            <div class="admin-list-item">
+                                <div>
+                                    <p class="font-medium">{{ teacher.username }} <span
+                                            class="text-sm text-gray-500">({{
+                                            teacher.role }})</span></p>
+                                    <p class="text-sm text-gray-500">{{ teacher.email }}</p>
+                                </div>
+                                <form action="{{ url_for('teacher.admin_remove_person') }}" method="POST"
+                                    onsubmit="return confirm('Permanently remove this staff account?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="person_type" value="teacher">
+                                    <input type="hidden" name="identifier" value="{{ teacher.id }}">
+                                    <button type="submit" class="btn-danger">Remove</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </details>
+                {% else %}
+                <p class="text-center text-gray-500">No other approved staff accounts.</p>
+                {% endif %}
+
+                <!-- Remove By Identifier (Legacy Cleanup) -->
+                <h3 class="text-xl font-medium mb-3 mt-8">Remove By Identifier</h3>
+                <form action="{{ url_for('teacher.admin_remove_person') }}" method="POST"
+                    class="space-y-3 mb-6 p-4 border rounded-lg">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div>
+                        <label for="person_type" class="block text-sm font-medium text-gray-700">Person Type</label>
+                        <select id="person_type" name="person_type" class="input-field" required>
+                            <option value="" disabled selected>Select type...</option>
+                            <option value="student">Student</option>
+                            <option value="teacher">Staff</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="identifier" class="block text-sm font-medium text-gray-700">Identifier</label>
+                        <input type="text" id="identifier" name="identifier" class="input-field"
+                            placeholder="Roll number, username, email, or ID" required>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn-danger w-full"
+                            onclick="return confirm('Permanently remove this account?')">Remove Account</button>
+                    </div>
+                    <p class="text-xs text-gray-500">Use this for legacy accounts (including non-@iitj emails).</p>
+                </form>
+
+                <!-- Manage Members -->
+                <h3 class="text-xl font-medium mb-3 mt-8">Manage Members</h3>
+                {% if all_students %}
+                <details class="admin-collapsible">
+                    <summary class="admin-collapsible-summary">
+                        <span>Show Members</span>
+                        <span class="admin-collapsible-count">{{ all_students|length }}</span>
+                    </summary>
+                    <div class="admin-collapsible-body">
+                        <div class="admin-list">
+                            {% for student in all_students %}
+                            <div class="admin-list-item">
+                                <div>
+                                    <p class="font-medium">{{ student.roll_number }} · {{ student.name }}</p>
+                                    <p class="text-sm text-gray-500">{{ student.email or 'No email' }} · Verified: {{
+                                        'Yes' if student.is_verified else 'No' }}</p>
+                                </div>
+                                <form action="{{ url_for('teacher.admin_remove_person') }}" method="POST"
+                                    onsubmit="return confirm('Permanently remove this student account?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="person_type" value="student">
+                                    <input type="hidden" name="identifier" value="{{ student.roll_number }}">
+                                    <button type="submit" class="btn-danger">Remove</button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </details>
+                {% else %}
+                <p class="text-center text-gray-500">No students enrolled.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- ===================== -->
+            <!-- PROFESSOR DASHBOARD -->
+            <!-- ===================== -->
+            {% if current_user.role in ['Professor', 'Admin'] %}
+            <div class="admin-section">
+                <h2 class="text-2xl font-semibold text-center mb-4">Professor/Admin Dashboard</h2>
+
+                <!-- Create New Subject Form -->
+                <form action="{{ url_for('teacher.create_subject') }}" method="POST"
+                    class="space-y-4 mb-8 p-4 border rounded-lg">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <h3 class="text-xl font-medium">Create New Subject</h3>
+                    <div>
+                        <label for="subject_code" class="block text-sm font-medium text-gray-700">Subject Code</label>
+                        <input type="text" id="subject_code" name="subject_code" class="input-field"
+                            placeholder="e.g., CS101" required>
+                    </div>
+                    <div>
+                        <label for="subject_name" class="block text-sm font-medium text-gray-700">Subject Name</label>
+                        <input type="text" id="subject_name" name="subject_name" class="input-field"
+                            placeholder="e.g., Introduction to Programming" required>
+                    </div>
+                    <div>
+                        <label for="academic_year" class="block text-sm font-medium text-gray-700">Academic Year</label>
+                        <input type="text" id="academic_year" name="academic_year" class="input-field"
+                            placeholder="e.g., 2025-26" required>
+                    </div>
+                    <div>
+                        <label for="semester" class="block text-sm font-medium text-gray-700">Semester</label>
+                        <select id="semester" name="semester" class="input-field" required>
+                            <option value="" disabled selected>-- Select Semester --</option>
+                            <option value="Odd">Odd</option>
+                            <option value="Even">Even</option>
+                            <option value="Summer">Summer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="default_session_type" class="block text-sm font-medium text-gray-700">Default
+                            Session Type</label>
+                        <select id="default_session_type" name="default_session_type" class="input-field">
+                            <option value="class" selected>Class</option>
+                            <option value="lecture">Lecture</option>
+                            <option value="tutorial">Tutorial</option>
+                            <option value="practical">Practical</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">Create Subject</button>
+                </form>
+
+                <!-- Manage My Subjects -->
+                <h3 class="text-xl font-medium mb-3">Manage My Subjects</h3>
+                <div>
+                    {% if subjects_managed %}
+                    {% for subject in subjects_managed %}
+                    <div class="subject-card">
+                        <div class="flex items-center justify-between cursor-pointer"
+                            onclick="toggleCollapse('content-{{ subject.id }}', this)">
+                            <div>
+                                <h4 class="text-lg font-semibold">{{ subject.name }} ({{ subject.code }})</h4>
+                                <p class="text-sm text-gray-500">Professor: {{ subject.professor_name }}</p>
+                                <p class="text-sm text-gray-500">{{ subject.academic_year }} / {{ subject.semester }} |
+                                    Default session: {{ subject.default_session_type|capitalize }}</p>
+                            </div>
+                            <div class="flex items-center">
+                                {% if subject.archived %}
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full mr-4"
+                                    style="background: rgba(148,163,184,0.2); color: var(--muted);">Archived</span>
+                                {% endif %}
+                                <svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div id="content-{{ subject.id }}" class="hidden mt-4">
+                            <div class="flex gap-2 my-4">
+                                <a href="{{ url_for('attendance.report', subject_id=subject.id) }}"
+                                    class="btn-outline w-full text-center">View Report</a>
+                                <a href="{{ url_for('attendance.download_report', subject_id=subject.id) }}"
+                                    class="btn-success w-full text-center whitespace-nowrap">Download Report</a>
+                            </div>
+                            <div class="flex gap-2 my-2">
+                                {% if subject.archived %}
+                                <form action="{{ url_for('teacher.unarchive_subject', subject_id=subject.id) }}"
+                                    method="POST" class="w-full">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-secondary w-full">Unarchive Subject</button>
+                                </form>
+                                {% else %}
+                                <form action="{{ url_for('teacher.archive_subject', subject_id=subject.id) }}"
+                                    method="POST" class="w-full"
+                                    onsubmit="return confirm('Archive this subject? Students cannot enroll once archived.');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn-outline w-full">Archive Subject</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <!-- Add Existing TA to this Subject -->
+                            <form action="{{ url_for('teacher.add_ta_to_subject') }}" method="POST"
+                                class="flex gap-2 my-4">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                <select name="ta_id" class="input-field" required>
+                                    <option value="" disabled selected>-- Select a TA to add --</option>
+                                    {% for ta in available_tas %}
+                                    {% set is_already_assigned = ta.staff_assignments | selectattr('subject_id',
+                                    'equalto', subject.id) | list | length > 0 %}
+                                    {% if not is_already_assigned %}
+                                    <option value="{{ ta.id }}">{{ ta.username }} ({{ ta.email }})</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn-success whitespace-nowrap">Add TA</button>
+                            </form>
+
+                            {% if current_user.role == 'Admin' %}
+                            <!-- Change Professor Form (Admin Only) -->
+                            <form action="{{ url_for('teacher.change_professor') }}" method="POST"
+                                class="flex gap-2 my-4">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                <select name="new_professor_id" class="input-field" required>
+                                    <option value="" disabled>-- Change Professor --</option>
+                                    {% for prof in available_professors %}
+                                    <option value="{{ prof.id }}" {% if subject.professor_name==prof.username
+                                        %}selected{% endif %}>{{ prof.username }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn-secondary whitespace-nowrap">Change Prof</button>
+                            </form>
+                            {% endif %}
+
+                            <!-- List of TAs for this Subject -->
+                            <h5 class="text-md font-semibold mt-4 mb-2">Assigned TAs:</h5>
+                            <div>
+                                <!-- Pending TAs -->
+                                {% set subject_pending_tas = pending_ta_requests | selectattr('subject_id', 'equalto',
+                                subject.id) | list %}
+                                {% if subject_pending_tas %}
+                                <p class="text-sm font-medium text-yellow-600">Pending Approval:</p>
+                                {% for ta_link in subject_pending_tas %}
+                                <div class="list-item">
+                                    <span>{{ ta_link.teacher.username }}</span>
+                                    <div class="button-group">
+                                        <form action="{{ url_for('teacher.approve_ta', staff_id=ta_link.id) }}"
+                                            method="POST">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn-success btn-small">Approve</button>
+                                        </form>
+                                        <form
+                                            action="{{ url_for('teacher.remove_ta_from_subject', staff_id=ta_link.id) }}"
+                                            method="POST" onsubmit="return confirm('Deny TA request?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button
+                                                type="submit" class="btn-danger btn-small">Deny</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+
+                                <!-- Approved TAs -->
+                                {% set subject_approved_tas = subject.staff_assignments | selectattr('role_in_subject',
+                                'equalto', 'TA') | selectattr('is_approved_by_prof', 'equalto', true) | list %}
+                                {% if subject_approved_tas %}
+                                <p class="text-sm font-medium text-green-600 mt-2">Approved:</p>
+                                {% for ta_link in subject_approved_tas %}
+                                <div class="list-item">
+                                    <span>{{ ta_link.teacher.username }}</span>
+                                    <div class="button-group">
+                                        <form
+                                            action="{{ url_for('teacher.remove_ta_from_subject', staff_id=ta_link.id) }}"
+                                            method="POST" onsubmit="return confirm('Remove TA from subject?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button
+                                                type="submit" class="btn-danger btn-small">Remove</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                                {% if not subject_pending_tas and not subject_approved_tas %}<p
+                                    class="text-sm text-gray-500 text-center py-2">No TAs assigned.</p>{% endif %}
+                            </div>
+
+                            <!-- NEW: List of Enrolled Students for this Subject -->
+                            <h5 class="text-md font-semibold mt-4 mb-2">Enrolled Students:</h5>
+                            <div class="admin-list"> <!-- Re-using admin-list style -->
+                                {% set enrolled_students = subject.students.all() | sort(attribute='roll_number') %}
+                                {% if enrolled_students %}
+                                {% for student in enrolled_students %}
+                                <div class="admin-list-item">
+                                    <div>
+                                        <p class="font-medium">{{ student.roll_number }}</p>
+                                        <p class="text-sm text-gray-500">{{ student.name }}</small>
+                                    </div>
+                                    <div class="button-group">
+                                        <form action="{{ url_for('teacher.unenroll_student_from_subject') }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Remove {{ student.name }} from this subject?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                            <input type="hidden" name="roll_number" value="{{ student.roll_number }}">
+                                            <button type="submit" class="btn-danger btn-small">Unenroll</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <p class="text-sm text-gray-500 text-center py-2">No students enrolled in this subject.
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-center text-gray-500">You have not created any subjects yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- TA DASHBOARD -->
+            {% if current_user.role == 'TA' %}
+            <div class="admin-section">
+                <h2 class="text-2xl font-semibold text-center mb-4">TA Dashboard</h2>
+                {% if attendance_subjects %}
+                <p class="text-center text-gray-500">You are approved to take attendance for the subjects listed in the
+                    "Mark Attendance" section above.</p>
+                <h3 class="text-xl font-medium mb-3 mt-6">Your Approved Subjects</h3>
+                <div class="subject-list">
+                    {% for subject in attendance_subjects %}
+                    <div class="subject-card flex justify-between items-center">
+                        <div>
+                            <h4 class="text-lg font-semibold">{{ subject.name }}</h4>
+                            <p class="text-sm text-gray-500">{{ subject.code }}</p>
+                        </div>
+                        <div class="button-group">
+                            <a href="{{ url_for('attendance.report', subject_id=subject.id) }}"
+                                class="btn-outline btn-small">View
+                                Report</a>
+                            <a href="{{ url_for('attendance.download_report', subject_id=subject.id) }}"
+                                class="btn-success btn-small">Download</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-gray-500">You are not yet approved for any subjects. Please contact your
+                    professor.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+
+        </div>
+
+        {% else %}
+
+        <!-- === LOGGED OUT VIEW (Login / Register) === -->
+        <div id="auth-view">
+            <h1 class="text-3xl font-bold text-center mb-6">Staff Portal</h1>
+            <div class="flex border-b mb-6">
+                <button id="login-tab-btn" class="tab-button active" onclick="showAuthTab('login')">Login</button>
+                <button id="register-tab-btn" class="tab-button" onclick="showAuthTab('register')">Register</button>
+            </div>
+            <form id="login-form" action="{{ url_for('auth.teacher_login') }}" method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div><label for="username" class="block text-sm font-medium text-gray-700">Username</label><input
+                        type="text" id="username" name="username" class="input-field" required></div>
+                <div><label for="password" class="block text-sm font-medium text-gray-700">Password</label><input
+                        type="password" id="password" name="password" class="input-field" required></div>
+                <div><button type="submit" class="btn-primary w-full">Login</button></div>
+                <div class="text-center mt-4">
+                    <button type="button" class="btn-link" onclick="showAuthTab('forgot-password')">Forgot
+                        Password?</button>
+                </div>
+            </form>
+            <form id="register-form" action="{{ url_for('auth.teacher_register') }}" method="POST"
+                class="space-y-6 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div><label for="reg_username" class="block text-sm font-medium text-gray-700">Username</label><input
+                        type="text" id="reg_username" name="reg_username" class="input-field" required></div>
+                <div><label for="reg_email" class="block text-sm font-medium text-gray-700">Email Address</label><input
+                        type="email" id="reg_email" name="reg_email" class="input-field" required></div>
+                <div><label for="reg_password" class="block text-sm font-medium text-gray-700">Password (min
+                        6)</label><input type="password" id="reg_password" name="reg_password" class="input-field"
+                        required minlength="6"></div>
+                <div>
+                    <label for="reg_role" class="block text-sm font-medium text-gray-700">Register as:</label>
+                    <select id="reg_role" name="reg_role" class="input-field" required>
+                        <option value="" disabled selected>-- Select your role --</option>
+                        <option value="Professor">Professor</option>
+                        <option value="TA">Teaching Assistant (TA)</option>
+                    </select>
+                </div>
+                <div><button type="submit" class="btn-primary w-full">Request Registration</button></div>
+            </form>
+
+            <!-- Forgot Password - Step 1 -->
+            <form id="forgot-password-form-step1" class="space-y-4 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h2 class="text-xl font-semibold text-center mb-4">Reset Password</h2>
+                <p class="text-sm text-gray-600 text-center mb-4">Enter your email to get a reset code.</p>
+                <div><label for="forgot_email" class="block text-sm font-medium text-gray-700">Email
+                        Address</label><input type="email" id="forgot_email" name="email" class="input-field" required>
+                </div>
+                <div><button type="submit" class="btn-primary w-full">Send Reset Code</button></div>
+                <div class="text-center"><button type="button" class="btn-link" onclick="showAuthTab('login')">Back to
+                        Login</button></div>
+            </form>
+
+            <!-- Forgot Password - Step 2 -->
+            <form id="forgot-password-form-step2" class="space-y-4 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h2 class="text-xl font-semibold text-center mb-4">Enter Reset Code</h2>
+                <input type="hidden" id="reset_email" name="email">
+                <div><label for="reset_otp" class="block text-sm font-medium text-gray-700">Verification Code
+                        (OTP)</label><input type="text" id="reset_otp" name="otp" class="input-field" required
+                        pattern="\d{6}"></div>
+                <div><label for="reset_new_password" class="block text-sm font-medium text-gray-700">New Password (min
+                        6)</label><input type="password" id="reset_new_password" name="new_password" class="input-field"
+                        required minlength="6"></div>
+                <div><button type="submit" class="btn-primary w-full">Reset Password</button></div>
+                <div class="text-center"><button type="button" class="btn-link" onclick="showAuthTab('login')">Back to
+                        Login</button></div>
+            </form>
+
+            <div class="text-center mt-6">
+                <a href="{{ url_for('main.index') }}"
+                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Back
+                    to Welcome Page</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <!-- Update Profile Photo Modal -->
+    <div id="profile-photo-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: var(--surface); color: var(--text); padding: 2rem; border-radius: 0.5rem; max-width: 400px; width: 90%; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto;">
+            <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Update Profile Photo</h2>
+
+            <div style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Option 1:
+                    Take Photo with Camera</label>
+                <div id="camera-container"
+                    style="display: none; flex-direction: column; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                    <video id="profile-video"
+                        style="width: 100%; max-width: 320px; border-radius: 0.5rem; border: 1px solid var(--border);"
+                        autoplay playsinline muted></video>
+                    <button type="button" id="capture-photo-btn" class="btn-primary w-full">Capture 📸</button>
+                    <canvas id="profile-canvas" style="display: none;"></canvas>
+                </div>
+                <button type="button" id="open-camera-btn" class="btn-outline w-full mb-2">Open WebCam</button>
+            </div>
+
+            <form id="profile-photo-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Option
+                        2: Finalize Selection (Upload File or Confirm Capture)</label>
+                    <input type="file" id="profile_photo" name="profile_photo" accept="image/jpeg,image/png"
+                        style="width: 100%; font-size: 0.875rem;">
+                </div>
+                <!-- Captured Image Preview -->
+                <div id="preview-container"
+                    style="display: none; align-items: center; flex-direction: column; gap: 0.5rem;">
+                    <p style="font-size: 0.875rem; font-weight: bold; color: var(--success);">Photo Captured
+                        Successfully!</p>
+                    <img id="profile-preview-img"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                    <button type="button" id="close-profile-photo-btn" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: var(--surface); color: var(--text); padding: 2rem; border-radius: 0.5rem; max-width: 400px; width: 90%; border: 1px solid var(--border);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Change Password</h2>
+            <form id="change-password-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Current
+                        Password</label>
+                    <input type="password" id="current_password" name="current_password" class="input-field" required
+                        style="width: 100%;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">New
+                        Password (min 6 chars)</label>
+                    <input type="password" id="new_password" name="new_password" class="input-field" required
+                        minlength="6" style="width: 100%;">
+                </div>
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Confirm
+                        New Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" class="input-field" required
+                        minlength="6" style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Change Password</button>
+                    <button type="button" id="close-change-password-btn" class="btn-outline"
+                        style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 
+      FIX: Define URLs in a separate <script> tag BEFORE the main logic.
+      This ensures Flask renders them as strings before the JS file tries to use them.
+    -->
+    <script>
+        // These will be replaced by Flask's url_for when rendered by the server
+        const urlForProcessAttendance = "{{ url_for('attendance.process_attendance') }}";
+        const urlForTeacherLogin = "{{ url_for('auth.teacher_login') }}";
+        const urlForTeacherRegister = "{{ url_for('auth.teacher_register') }}";
+        const urlForTeacherRequestPasswordReset = "{{ url_for('auth.teacher_request_password_reset') }}";
+        const urlForTeacherResetPassword = "{{ url_for('auth.teacher_reset_password') }}";
+        const urlForLogout = "{{ url_for('main.logout') }}";
+        const urlForIndex = "{{ url_for('main.index') }}";
+        const urlForGetPhotoDates = "{{ url_for('attendance.get_photo_dates', subject_id=0) }}"; // Placeholder, subject_id will be replaced
+        const urlForGetPhotos = "{{ url_for('attendance.get_photos', subject_id=0, date_str='0') }}"; // Placeholder
+        const urlForBoundingBoxQueue = "{{ url_for('attendance.bounding_box_review_queue') }}";
+        const urlForReviewBoundingBox = "{{ url_for('attendance.review_bounding_box', request_group_id='0') }}";
+        // Other URLs are in form 'action' attributes and don't need JS variables
+
+        function buildTeacherPhotoDatesUrl(subjectId) {
+            return urlForGetPhotoDates.replace(/\/0$/, `/${encodeURIComponent(String(subjectId))}`);
+        }
+
+        function buildTeacherPhotosUrl(subjectId, date) {
+            return urlForGetPhotos.replace(
+                /\/0\/0$/,
+                `/${encodeURIComponent(String(subjectId))}/${encodeURIComponent(String(date))}`
+            );
+        }
+
+        function buildReviewBoundingBoxUrl(requestGroupId) {
+            return urlForReviewBoundingBox.replace(/\/0$/, `/${encodeURIComponent(String(requestGroupId))}`);
+        }
+    </script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const root = document.documentElement;
+            const toggleBtn = document.getElementById('theme-toggle');
+            const saved = localStorage.getItem('theme') || 'dark';
+            applyTheme(saved);
+            toggleBtn?.addEventListener('click', () => {
+                const next = body.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(next);
+            });
+            function applyTheme(mode) {
+                body.classList.remove('light', 'dark');
+                body.classList.add(mode);
+                root.style.colorScheme = mode === 'dark' ? 'dark' : 'light';
+                localStorage.setItem('theme', mode);
+                if (toggleBtn) toggleBtn.textContent = mode === 'dark' ? '☀️' : '🌙';
+            }
+        })();
+    </script>
+
+
+    <script>
+        // --- DOM Elements ---
+        const video = document.getElementById('video-feed'); const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('capture-btn'); const uploadPhotosInput = document.getElementById('upload-photos'); const uploadCsvInput = document.getElementById('upload-attendance-csv'); const csvStatusText = document.getElementById('attendance-csv-name'); const photoStrip = document.getElementById('photo-strip'); const photoCountSpan = document.getElementById('photo-count'); const attendanceForm = document.getElementById('attendance-form'); const submitBtn = document.getElementById('submit-attendance-btn'); const submitBtnText = document.getElementById('submit-btn-text'); const spinner = document.getElementById('spinner'); const messageArea = document.getElementById('message-area-attendance'); const annotationContainer = document.getElementById('annotation-container'); const annotationHeader = document.querySelector('#annotation-area h3'); const sessionTypeSelect = document.getElementById('session_type');
+        const latestAnnotationContainer = document.getElementById('latest-annotation-container');
+        const boundingBoxReviewPanel = document.getElementById('bounding-box-review-panel');
+        const boundingBoxReviewCount = document.getElementById('bounding-box-review-count');
+        const boundingBoxReviewCountNumber = boundingBoxReviewCount?.querySelector('.review-count-number');
+        const boundingBoxReviewContainer = document.getElementById('bounding-box-review-container');
+        const reviewOverlayByRequestGroup = new Map();
+
+        // New elements for photo display
+        const photoSubjectSelect = document.getElementById('photo-subject-select');
+        const photoDateSelect = document.getElementById('photo-date-select');
+        const photoDisplayContainer = document.getElementById('latest-annotation-container');
+
+        let stream; let capturedPhotos = []; let selectedCsvFile = null;
+
+        // --- NEW Camera Setup (V17) ---
+        async function setupCamera() {
+            if (!video) return; // Don't run if attendance view isn't visible
+            console.log("Setting up camera...");
+            if (stream) stream.getTracks().forEach(t => t.stop()); // Stop old stream
+
+            try {
+                // --- THIS IS THE CHANGE ---
+                // 1. Try rear camera first (for phones)
+                console.log("Attempting to get rear camera (environment)...");
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                video.srcObject = stream;
+                console.log("Rear camera active.");
+                if (captureBtn) captureBtn.disabled = false;
+            } catch (envErr) {
+                console.warn("Rear camera (environment) failed:", envErr.name, envErr.message);
+
+                // 2. Fallback to front camera (for laptops/etc.)
+                console.log("Attempting to get front camera (user)...");
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                    video.srcObject = stream;
+                    console.log("Front camera active.");
+                    if (captureBtn) captureBtn.disabled = false;
+                } catch (userErr) {
+                    console.error("Front camera (user) also failed:", userErr.name, userErr.message);
+                    // Handle final errors
+                    let errMsg = `Camera Error: ${userErr.message}.`;
+                    if (userErr.name === 'NotAllowedError') {
+                        errMsg = "Camera permission denied. Allow in browser settings (padlock ⓘ icon).";
+                    } else if (userErr.name === 'NotFoundError') {
+                        errMsg = "No camera found on your device.";
+                    } else if (userErr.name === 'NotReadableError') {
+                        errMsg = "Camera is already in use by another app (Zoom, Teams, etc.).";
+                    }
+                    showMessage(messageArea, errMsg, true);
+                    if (captureBtn) captureBtn.disabled = true;
+                }
+            }
+        }
+
+        // --- Stop Camera (NEW) ---
+        function stopCamera() {
+            console.log("Stopping camera...");
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+            if (video) video.srcObject = null;
+            if (captureBtn) captureBtn.disabled = true;
+            console.log("Camera stopped.");
+        }
+        // Expose globally so toggleCollapse can access it
+        window.stopCamera = stopCamera;
+
+        function updateCsvStatus() {
+            if (!csvStatusText) return;
+            if (selectedCsvFile) {
+                csvStatusText.textContent = `CSV ready: ${selectedCsvFile.name}. Missing enrolled students will be marked absent and the attendance will be tagged as manual.`;
+                return;
+            }
+            csvStatusText.textContent = 'No CSV selected. Use student_roll_number and status, or just roll_number to mark listed students present.';
+        }
+
+        function clearSelectedCsv() {
+            selectedCsvFile = null;
+            if (uploadCsvInput) uploadCsvInput.value = '';
+            updateCsvStatus();
+        }
+
+        // --- Capture Photo ---
+        if (captureBtn) {
+            captureBtn.addEventListener('click', () => {
+                console.log("Capture click.");
+                if (!stream || !stream.active) {
+                    showMessage(messageArea, 'Camera not active. Please refresh and grant permission.', true);
+                    return;
+                }
+                const ctx = canvas.getContext('2d');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    if (blob) {
+                        clearSelectedCsv();
+                        const file = new File([blob], `c_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                        capturedPhotos.push(file);
+                        updatePhotoStrip();
+                        console.log("Photo captured, count:", capturedPhotos.length);
+                    } else {
+                        console.error("Blob conversion failed.");
+                        showMessage(messageArea, 'Capture fail (blob error).', true);
+                    }
+                }, 'image/jpeg', 0.9);
+            });
+        }
+
+        // --- Upload Photos ---
+        if (uploadPhotosInput) {
+            uploadPhotosInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files || []);
+                if (!files.length) return;
+                clearSelectedCsv();
+                files.forEach(f => capturedPhotos.push(f));
+                updatePhotoStrip();
+                uploadPhotosInput.value = '';
+                console.log("Uploaded photos added:", files.length);
+            });
+        }
+
+        if (uploadCsvInput) {
+            uploadCsvInput.addEventListener('change', (e) => {
+                const [file] = Array.from(e.target.files || []);
+                if (!file) return;
+                selectedCsvFile = file;
+                capturedPhotos = [];
+                updatePhotoStrip();
+                updateCsvStatus();
+            });
+        }
+
+        // --- Update Photo Strip ---
+        function updatePhotoStrip() {
+            if (!photoStrip) return;
+            photoStrip.innerHTML = '';
+            capturedPhotos.forEach((file, index) => {
+                const div = document.createElement('div');
+                div.className = 'photo-thumbnail-container';
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.classList.add('photo-thumbnail');
+                img.onload = () => URL.revokeObjectURL(img.src);
+                const rmBtn = document.createElement('button');
+                rmBtn.textContent = '×';
+                rmBtn.type = 'button';
+                rmBtn.className = 'remove-photo-btn';
+                rmBtn.onclick = (e) => { e.preventDefault(); removePhoto(index); };
+                div.appendChild(img);
+                div.appendChild(rmBtn);
+                photoStrip.appendChild(div);
+            });
+            if (photoCountSpan) photoCountSpan.textContent = capturedPhotos.length;
+        }
+
+        // --- Remove Photo ---
+        function removePhoto(index) { console.log("Removing photo:", index); capturedPhotos.splice(index, 1); updatePhotoStrip(); }
+
+        // --- Submit Attendance ---
+        if (attendanceForm) {
+            attendanceForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log("Att submit.");
+                const subjectId = document.getElementById('subject_id').value;
+                const date = document.getElementById('attendance_date').value;
+                if (!subjectId) { showMessage(messageArea, 'Select a subject.', true); return; }
+                if (!date) { showMessage(messageArea, 'Select a date.', true); return; }
+                if (capturedPhotos.length === 0 && !selectedCsvFile) {
+                    showMessage(messageArea, 'Capture/upload photos or choose a CSV file.', true);
+                    return;
+                }
+
+                setSubmitButtonState(true);
+                messageArea.innerHTML = '';
+                annotationContainer.innerHTML = '';
+                if (annotationHeader) annotationHeader.classList.add('hidden');
+
+                const formData = new FormData();
+                formData.append('subject_id', subjectId);
+                formData.append('attendance_date', date);
+                formData.append('session_type', sessionTypeSelect?.value || 'class');
+                if (selectedCsvFile) {
+                    formData.append('attendance_csv', selectedCsvFile);
+                } else {
+                    capturedPhotos.forEach((f) => formData.append('photos', f));
+                }
+                // Get the checkbox value
+                const sendEmailsCheckbox = document.getElementById('send_email_notifications');
+                if (sendEmailsCheckbox && sendEmailsCheckbox.checked) {
+                    formData.append('send_email_notifications', 'true');
+                }
+
+                console.log("Submitting:", date, "Subject:", subjectId, capturedPhotos.length, "photos.", selectedCsvFile?.name || 'no-csv');
+
+                try {
+                    // Use the JS variable defined at the top
+                    const response = await fetch(urlForProcessAttendance, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': csrfToken },
+                        body: formData
+                    });
+                    const result = await response.json();
+                    console.log("Submit response:", result);
+                    if (response.ok) {
+                        // Build message with stats
+                        let statsMsg = result.message || 'Processed.';
+                        statsMsg += `<br><strong>Summary:</strong>`;
+                        statsMsg += ` P: ${result.present_count ?? 0}`;
+                        statsMsg += ` | A: ${result.absent_count ?? 0}`;
+                        if ((result.medical_leave_count ?? 0) > 0) {
+                            statsMsg += ` | ML: ${result.medical_leave_count}`;
+                        }
+                        if ((result.other_leave_count ?? 0) > 0) {
+                            statsMsg += ` | OL: ${result.other_leave_count}`;
+                        }
+                        if (result.attendance_source === 'manual') {
+                            statsMsg += `<br><strong>Manual CSV Rows:</strong> ${result.csv_rows_processed ?? 0}`;
+                        }
+                        if (result.faces_detected !== undefined) {
+                            statsMsg += `<br><strong>📸 Faces Detected:</strong> ${result.faces_detected}`;
+                        }
+                        if (result.identified_in_photos !== undefined) {
+                            statsMsg += ` | <strong>✅ Students Identified:</strong> ${result.identified_in_photos}`;
+                        }
+                        showMessage(messageArea, statsMsg, false);
+                        if (result.annotated_images && result.annotated_images.length > 0) {
+                            if (annotationHeader) annotationHeader.classList.remove('hidden');
+                            let html = '';
+                            result.annotated_images.forEach(p => {
+                                html += `<img src="${p}?t=${new Date().getTime()}" class="annotation-image" alt="Processed">`;
+                            });
+                            annotationContainer.innerHTML = html;
+                        } else if (result.attendance_source === 'manual') {
+                            annotationContainer.innerHTML = '<p class="text-center text-gray-500">Manual CSV attendance does not create annotated photos.</p>';
+                        } else {
+                            annotationContainer.innerHTML = '<p class="text-center text-gray-500">No annotations generated.</p>';
+                        }
+                        capturedPhotos = [];
+                        updatePhotoStrip();
+                        clearSelectedCsv();
+                        // Initialize photo display if a subject is pre-selected (unlikely but good practice)
+                        if (photoSubjectSelect && photoSubjectSelect.value) {
+                            fetchPhotoDates(photoSubjectSelect.value);
+                        }
+                    } else {
+                        throw new Error(result.error || 'Unknown error.');
+                    }
+                } catch (error) {
+                    console.error("Submit error:", error);
+                    showMessage(messageArea, `Error: ${error.message}`, true);
+                } finally {
+                    setSubmitButtonState(false);
+                }
+            });
+        }
+
+        updateCsvStatus();
+
+        // --- Dynamic Photo Display Logic ---
+        async function fetchPhotoDates(subjectId) {
+            photoDateSelect.innerHTML = '<option value="">-- Select Date --</option>';
+            photoDateSelect.disabled = true;
+            photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Loading dates...</p>';
+
+            if (!subjectId) {
+                photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Select a subject and date to view photos.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(buildTeacherPhotoDatesUrl(subjectId));
+                const dates = await response.json();
+
+                if (response.ok && dates.length > 0) {
+                    dates.forEach(date => {
+                        const option = document.createElement('option');
+                        option.value = date;
+                        option.textContent = date;
+                        photoDateSelect.appendChild(option);
+                    });
+                    photoDateSelect.disabled = false;
+                    photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Select a date to view photos.</p>';
+                } else {
+                    photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">No photos found for this subject.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching photo dates:", error);
+                photoDisplayContainer.innerHTML = '<p class="text-center text-red-500">Error loading dates.</p>';
+            }
+        }
+
+        async function fetchPhotos(subjectId, date) {
+            photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Loading photos...</p>';
+
+            if (!subjectId || !date) {
+                photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Select a subject and date to view photos.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(buildTeacherPhotosUrl(subjectId, date));
+                const photoItems = await response.json();
+
+                if (response.ok && Array.isArray(photoItems) && photoItems.length > 0) {
+                    photoDisplayContainer.innerHTML = photoItems.map((item) => renderTeacherPhotoCard(item)).join('');
+                } else {
+                    photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">No photos found for this date.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching photos:", error);
+                photoDisplayContainer.innerHTML = '<p class="text-center text-red-500">Error loading photos.</p>';
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function normalizeReviewAssets(item) {
+            const assets = [];
+            const seen = new Set();
+
+            const pushAsset = (asset) => {
+                if (!asset || !asset.url) return;
+                const kind = asset.kind === 'video' ? 'video' : 'image';
+                const url = String(asset.url);
+                const key = `${url}::${kind}`;
+                if (seen.has(key)) return;
+                seen.add(key);
+                assets.push({
+                    url,
+                    kind,
+                    label: asset.label || (assets.length === 0 ? 'Profile photo' : 'Registered asset'),
+                });
+            };
+
+            if (Array.isArray(item?.review_assets) && item.review_assets.length > 0) {
+                item.review_assets.forEach(pushAsset);
+            }
+
+            if (!assets.length) {
+                pushAsset(item?.student_profile_photo_url ? {
+                    url: item.student_profile_photo_url,
+                    kind: 'image',
+                    label: 'Profile photo',
+                } : null);
+                pushAsset(item?.registered_asset_path ? {
+                    url: item.registered_asset_path,
+                    kind: item.registered_asset_kind || 'image',
+                    label: 'Registered asset',
+                } : null);
+            }
+
+            return assets;
+        }
+
+        function renderReviewAssetCarousel(item) {
+            const assets = normalizeReviewAssets(item);
+            if (!assets.length) {
+                return `
+                    <div class="review-asset-carousel">
+                        <div class="review-asset-stage">
+                            <div class="review-asset-placeholder">
+                                <p>No registered asset available.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const slides = assets.map((asset, index) => {
+                const isActive = index === 0;
+                const label = escapeHtml(asset.label || `Asset ${index + 1}`);
+                const src = escapeHtml(asset.url);
+                const media = asset.kind === 'video'
+                    ? `<video src="${src}" controls preload="metadata" playsinline></video>`
+                    : `<img src="${src}" alt="${label}">`;
+                return `
+                    <div
+                        class="review-asset-slide${isActive ? ' is-active' : ''}"
+                        data-asset-carousel-slide
+                        data-carousel-slide-index="${index}"
+                        data-asset-label="${label}"
+                        ${isActive ? '' : 'hidden'}
+                    >
+                        ${media}
+                    </div>
+                `;
+            }).join('');
+
+            const showControls = assets.length > 1;
+            const firstLabel = escapeHtml(assets[0].label || 'Profile photo');
+
+            return `
+                <div class="review-asset-carousel" data-asset-carousel data-active-index="0">
+                    <div class="review-asset-stage">
+                        ${slides}
+                        ${showControls ? `
+                            <div class="review-asset-controls" aria-hidden="true">
+                                <button
+                                    type="button"
+                                    class="review-asset-control"
+                                    data-asset-carousel-action="prev"
+                                    aria-label="Previous asset"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M12.78 15.53a.75.75 0 01-1.06 0l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 111.06 1.06L9.06 10l3.72 3.72a.75.75 0 010 1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="review-asset-control"
+                                    data-asset-carousel-action="next"
+                                    aria-label="Next asset"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M7.22 4.47a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 11-1.06-1.06L10.94 10 7.22 6.28a.75.75 0 010-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="review-asset-footer">
+                        <p class="review-asset-caption" data-asset-carousel-caption>${firstLabel}</p>
+                        <span class="review-asset-counter" data-asset-carousel-counter>1 / ${assets.length}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function advanceReviewAssetCarousel(root, direction) {
+            if (!root) return;
+
+            const slides = Array.from(root.querySelectorAll('[data-asset-carousel-slide]'));
+            if (slides.length <= 1) return;
+
+            const currentIndex = Number.parseInt(root.dataset.activeIndex || '0', 10) || 0;
+            const nextIndex = (currentIndex + direction + slides.length) % slides.length;
+            root.dataset.activeIndex = String(nextIndex);
+
+            slides.forEach((slide, index) => {
+                const active = index === nextIndex;
+                slide.hidden = !active;
+                slide.classList.toggle('is-active', active);
+                const video = slide.querySelector('video');
+                if (video && !active) {
+                    video.pause();
+                }
+            });
+
+            const activeSlide = slides[nextIndex];
+            const caption = root.querySelector('[data-asset-carousel-caption]');
+            if (caption) {
+                caption.textContent = activeSlide?.dataset?.assetLabel || `Asset ${nextIndex + 1}`;
+            }
+
+            const counter = root.querySelector('[data-asset-carousel-counter]');
+            if (counter) {
+                counter.textContent = `${nextIndex + 1} / ${slides.length}`;
+            }
+        }
+
+        function boxStyle(photo, bbox) {
+            const top = (bbox.top / photo.image_height) * 100;
+            const left = (bbox.left / photo.image_width) * 100;
+            const width = ((bbox.right - bbox.left) / photo.image_width) * 100;
+            const height = ((bbox.bottom - bbox.top) / photo.image_height) * 100;
+            return `top:${top}%;left:${left}%;width:${width}%;height:${height}%;`;
+        }
+
+        function boxMarkup(photo, bbox, label, className = '') {
+            return `<div class="photo-box ${className}" style="${boxStyle(photo, bbox)}"><span class="photo-box-label">${escapeHtml(label)}</span></div>`;
+        }
+
+        function normalizeRoll(roll) {
+            return String(roll || '').trim().toUpperCase();
+        }
+
+        function buildReviewOverlayHtml(item) {
+            const targetRoll = normalizeRoll(item.student_roll_number);
+            const deletedSourceIds = new Set((item.delete_boxes || []).map((box) => String(box.source_box?.id || box.source_box_id || '')));
+            const targetStudentCurrentBoxes = (item.current_boxes || [])
+                .filter((box) => normalizeRoll(box.student_roll_number) === targetRoll)
+                .filter((box) => !deletedSourceIds.has(String(box.id)));
+
+            return [
+                ...targetStudentCurrentBoxes.map((box) => boxMarkup(item.photo, box.bounding_box, box.student_roll_number)),
+                ...(item.add_boxes || []).map((box, boxIndex) => boxMarkup(
+                    item.photo,
+                    box.bounding_box,
+                    `${box.student_roll_number} · Add ${boxIndex + 1}`,
+                    'pending-add'
+                )),
+                ...(item.delete_boxes || []).map((box, boxIndex) => boxMarkup(
+                    item.photo,
+                    box.bounding_box,
+                    `${item.student_roll_number} · Remove ${boxIndex + 1}`,
+                    'pending-remove'
+                ))
+            ].join('');
+        }
+
+        function renderTeacherPhotoCard(item) {
+            const normalizedItem = (typeof item === 'string')
+                ? { image_path: item, captured_photo_name: 'Attendance Photo', review_events: [] }
+                : (item || {});
+            const imagePath = normalizedItem.image_path || normalizedItem.raw_image_path || '';
+            const cacheBustedPath = imagePath
+                ? `${imagePath}${imagePath.includes('?') ? '&' : '?'}t=${Date.now()}`
+                : '';
+            const reviewEvents = Array.isArray(normalizedItem.review_events)
+                ? normalizedItem.review_events
+                : [];
+
+            const reviewHtml = reviewEvents.length
+                ? `
+                    <div class="gallery-review-list">
+                        ${reviewEvents.map((event) => `
+                            <div class="gallery-review-event">
+                                <strong>${escapeHtml(event.student_name || event.student_roll_number || 'Student request')}</strong>
+                                <p>
+                                    Posted: ${escapeHtml(event.posted_at_ist || 'Unknown')}<br>
+                                    Accepted: ${escapeHtml(event.accepted_at_ist || 'Pending approval')}<br>
+                                    Accepted by: ${escapeHtml(event.accepted_by || 'Pending approval')}<br>
+                                    Changes: ${Number(event.delete_count || 0)} delete${Number(event.delete_count || 0) === 1 ? '' : 's'} and ${Number(event.add_count || 0)} add${Number(event.add_count || 0) === 1 ? '' : 's'}
+                                </p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `
+                : '<p class="gallery-photo-subtitle">No approved student review requests are attached to this image.</p>';
+
+            return `
+                <div class="gallery-photo-card">
+                    ${cacheBustedPath
+                    ? `<img src="${cacheBustedPath}" class="annotation-image cursor-pointer" alt="Attendance Photo" onclick="showLightbox(this.src)">`
+                    : '<div class="gallery-photo-meta"><p class="gallery-photo-subtitle">Image unavailable.</p></div>'}
+                    <div class="gallery-photo-meta">
+                        <div>
+                            <p class="gallery-photo-title">${escapeHtml(normalizedItem.captured_photo_name || 'Attendance Photo')}</p>
+                            <p class="gallery-photo-subtitle">Approved student review history for this image</p>
+                        </div>
+                        ${reviewHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function collectReviewAddBoxes(requestGroupId) {
+            if (!boundingBoxReviewContainer) return [];
+            const reviewCard = boundingBoxReviewContainer.querySelector(`[data-review-group-id="${requestGroupId}"]`);
+            if (!reviewCard) return [];
+
+            return Array.from(reviewCard.querySelectorAll('[data-review-add-box-editor]')).map((editor) => {
+                const bbox = {};
+                editor.querySelectorAll('[data-review-axis]').forEach((input) => {
+                    bbox[input.dataset.reviewAxis] = Number(input.value);
+                });
+                return bbox;
+            });
+        }
+
+        function renderBoundingBoxQueue(items) {
+            if (!boundingBoxReviewContainer) return;
+            reviewOverlayByRequestGroup.clear();
+            if (boundingBoxReviewCount) {
+                if (boundingBoxReviewCountNumber) {
+                    boundingBoxReviewCountNumber.textContent = String(items.length);
+                }
+                boundingBoxReviewCount.classList.toggle('is-empty', items.length === 0);
+                boundingBoxReviewCount.classList.remove('is-error');
+            }
+
+            if (!items.length) {
+                boundingBoxReviewContainer.innerHTML = '<p class="text-center text-gray-500">No pending student box reviews.</p>';
+                return;
+            }
+
+            boundingBoxReviewContainer.innerHTML = items.map((item) => {
+                const overlayHtml = buildReviewOverlayHtml(item);
+                reviewOverlayByRequestGroup.set(String(item.request_group_id), overlayHtml);
+
+                const reviewAssetCarousel = renderReviewAssetCarousel(item);
+
+                const addEditors = (item.add_boxes || []).length
+                    ? `
+                        <div class="review-editor-list">
+                            ${(item.add_boxes || []).map((box, boxIndex) => `
+                                <div class="review-editor-card" data-review-add-box-editor="${boxIndex}">
+                                    <h4>Proposed add ${boxIndex + 1}</h4>
+                                    <div class="review-editor-grid">
+                                        <label class="review-coordinate-field">
+                                            <span>Top</span>
+                                            <input type="number" data-review-axis="top" value="${box.bounding_box.top}" step="1">
+                                        </label>
+                                        <label class="review-coordinate-field">
+                                            <span>Right</span>
+                                            <input type="number" data-review-axis="right" value="${box.bounding_box.right}" step="1">
+                                        </label>
+                                        <label class="review-coordinate-field">
+                                            <span>Bottom</span>
+                                            <input type="number" data-review-axis="bottom" value="${box.bounding_box.bottom}" step="1">
+                                        </label>
+                                        <label class="review-coordinate-field">
+                                            <span>Left</span>
+                                            <input type="number" data-review-axis="left" value="${box.bounding_box.left}" step="1">
+                                        </label>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `
+                    : '<p class="text-sm text-gray-500 mt-4">This request only removes existing boxes.</p>';
+
+                return `
+                    <div class="review-card" data-review-group-id="${escapeHtml(item.request_group_id)}">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-3">
+                                ${item.student_profile_photo_url
+                        ? `<img src="${escapeHtml(item.student_profile_photo_url)}" alt="Student Avatar" class="w-10 h-10 rounded-full object-cover">`
+                        : `<div class="w-10 h-10 rounded-full flex items-center justify-center border" style="background: var(--surface-alt); border-color: var(--border);">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-gray-500">
+                                            <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>`
+                    }
+                                <div>
+                                    <h3 class="text-lg font-semibold">${escapeHtml(item.student_name)} (${escapeHtml(item.student_roll_number)})</h3>
+                                    <p class="review-meta">${escapeHtml(item.subject_name)} (${escapeHtml(item.subject_code)}) · ${escapeHtml(item.academic_year)} / ${escapeHtml(item.semester)} · ${escapeHtml(item.attendance_date)} · ${escapeHtml(item.session_type)}</p>
+                                    <p class="review-meta">Requested: ${escapeHtml(item.submitted_at_ist || 'Unknown')}</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-semibold">Grouped change set</span>
+                        </div>
+                        <div class="review-change-row">
+                            <span class="review-change-chip delete">${item.delete_count} delete${item.delete_count === 1 ? '' : 's'}</span>
+                            <span class="review-change-chip add">${item.add_count} add${item.add_count === 1 ? '' : 's'}</span>
+                        </div>
+                        <div class="review-card-grid">
+                            <div>
+                                <p class="text-sm font-semibold mb-2">Raw Photo with Proposed State</p>
+                                <div class="photo-review-shell">
+                                    <img src="${item.photo.raw_image_path}?t=${Date.now()}" alt="Raw attendance photo" class="cursor-pointer" data-review-group-id="${escapeHtml(item.request_group_id)}" onclick="showReviewLightbox(this.src, this.dataset.reviewGroupId)">
+                                    <div class="photo-overlay">${overlayHtml}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold mb-2">Student Assets</p>
+                                ${reviewAssetCarousel}
+                            </div>
+                        </div>
+                        ${addEditors}
+                        <p class="text-sm text-gray-500 mt-4">Adjust the proposed add-box coordinates if needed, then approve as-is or with your edits. Reject leaves the current attendance state unchanged.</p>
+                        <div class="flex gap-2 mt-4">
+                            <button type="button" class="btn-success w-full" data-review-action="approve" data-request-group-id="${item.request_group_id}">Approve</button>
+                            <button type="button" class="btn-danger w-full" data-review-action="reject" data-request-group-id="${item.request_group_id}">Reject</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function fetchBoundingBoxQueue() {
+            if (!boundingBoxReviewContainer) return;
+            boundingBoxReviewContainer.innerHTML = '<p class="text-center text-gray-500">Loading pending review queue...</p>';
+            if (boundingBoxReviewCount) {
+                if (boundingBoxReviewCountNumber) {
+                    boundingBoxReviewCountNumber.textContent = '...';
+                }
+                boundingBoxReviewCount.classList.remove('is-empty', 'is-error');
+            }
+            try {
+                const response = await fetch(urlForBoundingBoxQueue);
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load review queue.');
+                }
+                renderBoundingBoxQueue(data);
+            } catch (error) {
+                console.error("Error fetching review queue:", error);
+                if (boundingBoxReviewCount) {
+                    if (boundingBoxReviewCountNumber) {
+                        boundingBoxReviewCountNumber.textContent = '!';
+                    }
+                    boundingBoxReviewCount.classList.remove('is-empty');
+                    boundingBoxReviewCount.classList.add('is-error');
+                }
+                boundingBoxReviewContainer.innerHTML = `<p class="text-center text-red-500">${escapeHtml(error.message)}</p>`;
+            }
+        }
+
+        async function handleBoundingBoxReview(requestGroupId, decision) {
+            const formData = new FormData();
+            formData.append('decision', decision);
+            if (decision === 'approve') {
+                formData.append('add_boxes', JSON.stringify(collectReviewAddBoxes(requestGroupId)));
+            }
+
+            try {
+                const response = await fetch(buildReviewBoundingBoxUrl(requestGroupId), {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: formData
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Review request failed.');
+                }
+                fetchBoundingBoxQueue();
+                if (photoSubjectSelect?.value && photoDateSelect?.value) {
+                    fetchPhotos(photoSubjectSelect.value, photoDateSelect.value);
+                }
+                showMessage(messageArea, data.message || 'Review updated.', false);
+            } catch (error) {
+                showMessage(messageArea, error.message, true);
+            }
+        }
+
+        // Event Listeners for photo display dropdowns
+        if (photoSubjectSelect) {
+            photoSubjectSelect.addEventListener('change', (e) => {
+                const subjectId = e.target.value;
+                fetchPhotoDates(subjectId);
+                photoDateSelect.value = ""; // Reset date selection
+                photoDisplayContainer.innerHTML = '<p class="text-center text-gray-500">Select a date to view photos.</p>';
+            });
+        }
+
+        if (photoDateSelect) {
+            photoDateSelect.addEventListener('change', (e) => {
+                const subjectId = photoSubjectSelect.value;
+                const date = e.target.value;
+                fetchPhotos(subjectId, date);
+            });
+        }
+
+        if (boundingBoxReviewContainer) {
+            boundingBoxReviewContainer.addEventListener('click', (event) => {
+                const carouselButton = event.target.closest('[data-asset-carousel-action]');
+                if (carouselButton) {
+                    const carousel = carouselButton.closest('[data-asset-carousel]');
+                    if (!carousel) return;
+                    const direction = carouselButton.dataset.assetCarouselAction === 'prev' ? -1 : 1;
+                    advanceReviewAssetCarousel(carousel, direction);
+                    return;
+                }
+
+                const reviewButton = event.target.closest('[data-review-action]');
+                if (!reviewButton) return;
+                handleBoundingBoxReview(reviewButton.dataset.requestGroupId, reviewButton.dataset.reviewAction);
+            });
+        }
+
+        // --- Helpers ---
+        function setSubmitButtonState(isSubmitting) {
+            if (!submitBtn) return;
+            submitBtn.disabled = isSubmitting;
+            submitBtnText.textContent = isSubmitting ? 'Submitting...' : 'Submit Attendance';
+            isSubmitting ? spinner?.classList.remove('hidden') : spinner?.classList.add('hidden');
+        }
+
+        function showMessage(el, msg, isError = false) {
+            if (!el) return;
+            console.log(`Msg (Err: ${isError}): ${msg}`);
+            el.innerHTML = `<div class="alert ${isError ? 'alert-danger' : 'alert-success'}">${msg}</div>`;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function setupCameraIfNeeded() {
+            const attendanceContent = document.getElementById('attendance-content');
+            if (attendanceContent && !attendanceContent.classList.contains('hidden')) {
+                setupCamera();
+            }
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("Teacher DOM Loaded.");
+            if (document.getElementById('auth-view')) {
+                console.log("Auth view detected, default tab login.");
+                showAuthTab('login');
+            }
+            // Initial setup for attendance date if the form is visible on load
+            const dateInput = document.getElementById('attendance_date');
+            if (dateInput) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            const subjectSelect = document.getElementById('subject_id');
+            if (subjectSelect && sessionTypeSelect) {
+                subjectSelect.addEventListener('change', () => {
+                    const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
+                    const nextSessionType = selectedOption?.dataset?.defaultSessionType || 'class';
+                    sessionTypeSelect.value = nextSessionType;
+                });
+            }
+            fetchBoundingBoxQueue();
+        });
+    </script>
+
+
+    <!-- Password Reset Logic -->
+    <script>
+        function showAuthTab(tabName) {
+            // Hide all forms first
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('forgot-password-form-step1').classList.add('hidden');
+            document.getElementById('forgot-password-form-step2').classList.add('hidden');
+
+            // Deactivate all tabs
+            document.getElementById('login-tab-btn').classList.remove('active');
+            document.getElementById('register-tab-btn').classList.remove('active');
+
+            // Show the selected form and activate the corresponding tab
+            if (tabName === 'login') {
+                document.getElementById('login-form').classList.remove('hidden');
+                document.getElementById('login-tab-btn').classList.add('active');
+            } else if (tabName === 'register') {
+                document.getElementById('register-form').classList.remove('hidden');
+                document.getElementById('register-tab-btn').classList.add('active');
+            } else if (tabName === 'forgot-password') {
+                document.getElementById('forgot-password-form-step1').classList.remove('hidden');
+            } else if (tabName === 'reset-password') {
+                document.getElementById('forgot-password-form-step2').classList.remove('hidden');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const step1Form = document.getElementById('forgot-password-form-step1');
+            const step2Form = document.getElementById('forgot-password-form-step2');
+            const loginForm = document.getElementById('login-form');
+            const flashes = document.querySelectorAll('#auth-view > .alert');
+
+            if (step1Form) {
+                step1Form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const email = document.getElementById('forgot_email').value;
+                    const formData = new FormData(step1Form);
+                    formData.set('email', email);
+
+                    try {
+                        const response = await fetch(urlForTeacherRequestPasswordReset, {
+                            method: 'POST',
+                            headers: { 'X-CSRFToken': csrfToken },
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            showMessage(step1Form.querySelector('.alert-container') || step1Form, result.message, false);
+                            document.getElementById('reset_email').value = email; // Store email for step 2
+                            showAuthTab('reset-password');
+                        } else {
+                            throw new Error(result.error || 'Failed to send reset code.');
+                        }
+                    } catch (error) {
+                        showMessage(step1Form.querySelector('.alert-container') || step1Form, error.message, true);
+                    }
+                });
+            }
+
+            if (step2Form) {
+                step2Form.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const email = document.getElementById('reset_email').value;
+                    const otp = document.getElementById('reset_otp').value;
+                    const new_password = document.getElementById('reset_new_password').value;
+
+                    const formData = new FormData(step2Form);
+                    formData.set('email', email);
+                    formData.set('otp', otp);
+                    formData.set('new_password', new_password);
+
+                    try {
+                        const response = await fetch(urlForTeacherResetPassword, {
+                            method: 'POST',
+                            headers: { 'X-CSRFToken': csrfToken },
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            if (loginForm) {
+                                showMessage(loginForm.querySelector('.alert-container') || loginForm, result.message, false);
+                            } else {
+                                showMessage(step2Form.querySelector('.alert-container') || step2Form, result.message, false);
+                            }
+                            showAuthTab('login');
+                            step2Form.reset();
+                        } else {
+                            throw new Error(result.error || 'Failed to reset password.');
+                        }
+                    } catch (error) {
+                        showMessage(step2Form.querySelector('.alert-container') || step2Form, error.message, true);
+                    }
+                });
+            }
+
+            // Helper to display messages within forms
+            function showMessage(formElement, message, isError) {
+                let messageDiv = formElement.querySelector('.alert');
+                if (!messageDiv) {
+                    messageDiv = document.createElement('div');
+                    messageDiv.className = 'alert';
+                    formElement.prepend(messageDiv);
+                }
+                messageDiv.className = `alert ${isError ? 'alert-danger' : 'alert-success'}`;
+                messageDiv.textContent = message;
+            }
+        });
+    </script>
+    <script>
+        function toggleCollapse(elementId, headerElement) {
+            const content = document.getElementById(elementId);
+            const icon = headerElement.querySelector('svg');
+            // console.log("Attendance collapsed - stopping camera");  // ADD THIS
+            if (content) {
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+                if (headerElement.hasAttribute('aria-expanded')) {
+                    headerElement.setAttribute('aria-expanded', String(!content.classList.contains('hidden')));
+                }
+
+                // Stop camera when collapsing attendance section
+                if (elementId === 'attendance-content' && content.classList.contains('hidden')) {
+                    if (typeof stopCamera === 'function') stopCamera();
+                }
+            }
+        }
+    </script>
+    <script>
+        // Change Password Modal
+        const cpModal = document.getElementById('change-password-modal');
+        const cpForm = document.getElementById('change-password-form');
+        const cpOpenBtn = document.getElementById('open-change-password-btn');
+        const cpCloseBtn = document.getElementById('close-change-password-btn');
+
+        if (cpOpenBtn) cpOpenBtn.onclick = () => cpModal.style.display = 'flex';
+        if (cpCloseBtn) cpCloseBtn.onclick = () => { cpModal.style.display = 'none'; cpForm.reset(); };
+        if (cpModal) cpModal.onclick = (e) => { if (e.target === cpModal) { cpModal.style.display = 'none'; cpForm.reset(); } };
+
+        if (cpForm) {
+            cpForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = cpForm.querySelector('button[type="submit"]');
+                const txt = btn.textContent;
+                const newPwd = document.getElementById('new_password').value;
+                const confirmPwd = document.getElementById('confirm_password').value;
+                if (newPwd !== confirmPwd) { alert('Passwords do not match'); return; }
+                btn.disabled = true; btn.textContent = 'Changing...';
+                try {
+                    const res = await fetch('/change-password', { method: 'POST', headers: { 'X-CSRFToken': csrfToken }, body: new FormData(cpForm) });
+                    const data = await res.json();
+                    alert(data.message || data.error);
+                    if (res.ok) {
+                        cpModal.style.display = 'none';
+                        cpForm.reset();
+                        window.location.reload();
+                    }
+                } catch (err) { alert('Error: ' + err.message); }
+                finally { btn.disabled = false; btn.textContent = txt; }
+            };
+        }
+
+        // Profile Photo Logic
+        const ppModal = document.getElementById('profile-photo-modal');
+        const ppForm = document.getElementById('profile-photo-form');
+        const ppOpenBtn = document.getElementById('open-profile-photo-btn');
+        const ppCloseBtn = document.getElementById('close-profile-photo-btn');
+        const openCameraBtn = document.getElementById('open-camera-btn');
+        const cameraContainer = document.getElementById('camera-container');
+        const videoEl = document.getElementById('profile-video');
+        const captureBtnUser = document.getElementById('capture-photo-btn');
+        const canvasEl = document.getElementById('profile-canvas');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('profile-preview-img');
+        const fileInput = document.getElementById('profile_photo');
+
+        let localStream = null;
+        let capturedBlob = null;
+
+        function cleanupCamera() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            cameraContainer.style.display = 'none';
+            openCameraBtn.style.display = 'block';
+        }
+
+        if (ppOpenBtn) ppOpenBtn.onclick = () => ppModal.style.display = 'flex';
+
+        const closeProfileFlow = () => {
+            ppModal.style.display = 'none';
+            cleanupCamera();
+            ppForm.reset();
+            capturedBlob = null;
+            previewContainer.style.display = 'none';
+        };
+
+        if (ppCloseBtn) ppCloseBtn.onclick = closeProfileFlow;
+        if (ppModal) ppModal.onclick = (e) => { if (e.target === ppModal) closeProfileFlow(); };
+
+        // Handle File Selection (reset blob so they don't combat)
+        if (fileInput) {
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    capturedBlob = null;
+                    previewContainer.style.display = 'none';
+                }
+            };
+        }
+
+        // WebCam Hooks
+        if (openCameraBtn) {
+            openCameraBtn.onclick = async () => {
+                try {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    videoEl.srcObject = localStream;
+                    openCameraBtn.style.display = 'none';
+                    cameraContainer.style.display = 'flex';
+                } catch (err) {
+                    alert('Failed to access camera: ' + err.message);
+                }
+            };
+        }
+
+        if (captureBtnUser) {
+            captureBtnUser.onclick = () => {
+                if (!localStream) return;
+
+                // Draw to canvas
+                canvasEl.width = videoEl.videoWidth;
+                canvasEl.height = videoEl.videoHeight;
+                const ctx = canvasEl.getContext('2d');
+                ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+
+                // Convert to Blob
+                canvasEl.toBlob((blob) => {
+                    capturedBlob = blob;
+                    fileInput.value = ""; // clear file input if they had something
+
+                    // Preview
+                    const url = URL.createObjectURL(blob);
+                    previewImg.src = url;
+                    previewContainer.style.display = 'flex';
+
+                    cleanupCamera();
+                }, 'image/jpeg', 0.90);
+            };
+        }
+
+        if (ppForm) {
+            ppForm.onsubmit = async (e) => {
+                e.preventDefault();
+
+                if (!capturedBlob && fileInput.files.length === 0) {
+                    alert('Please select a photo or take one with your camera.');
+                    return;
+                }
+
+                const btn = ppForm.querySelector('button[type="submit"]');
+                const txt = btn.textContent;
+                btn.disabled = true; btn.textContent = 'Saving...';
+                try {
+                    const formData = new FormData();
+                    formData.append('csrf_token', ppForm.querySelector('input[name="csrf_token"]').value);
+
+                    if (capturedBlob) {
+                        formData.append('profile_photo', capturedBlob, 'webcam_capture.jpg');
+                    } else if (fileInput.files.length > 0) {
+                        formData.append('profile_photo', fileInput.files[0]);
+                    }
+
+                    const token = typeof csrfToken !== 'undefined' ? csrfToken : '';
+
+                    const res = await fetch("{{ url_for('teacher.upload_profile_photo') }}", {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': token },
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        ppModal.style.display = 'none';
+                        ppForm.reset();
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Failed to upload photo.');
+                    }
+                } catch (err) { alert('Error: ' + err.message); }
+                finally { btn.disabled = false; btn.textContent = txt; }
+            };
+        }
+    </script>
+    <script>
+        // Go to Top Button Visibility
+        const goTopBtn = document.getElementById('go-top-btn');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                goTopBtn.classList.add('visible');
+            } else {
+                goTopBtn.classList.remove('visible');
+            }
+        });
+    </script>
+    <script>
+        // Navbar "Mark Attendance" Shortcut
+        const navMarkAttBtn = document.getElementById('nav-mark-attendance-btn');
+        if (navMarkAttBtn) {
+            navMarkAttBtn.onclick = () => {
+                const section = document.getElementById('attendance-content');
+                const header = section?.previousElementSibling; // The header div with the arrow
+
+                if (section && header) {
+                    // 1. Expand if hidden
+                    if (section.classList.contains('hidden')) {
+                        toggleCollapse('attendance-content', header);
+                        setupCameraIfNeeded();
+                    }
+                    // 2. Scroll to it
+                    setTimeout(() => {
+                        header.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            };
+        }
+    </script>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal"
+        class="fixed fixed-layout inset-0 bg-black bg-opacity-80 overflow-auto h-full w-full hidden z-50 flex items-center justify-center p-4"
+        onclick="closeLightbox(event)">
+        <button id="close-lightbox-btn"
+            class="fixed top-4 right-4 text-white text-3xl font-bold cursor-pointer bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 z-50"
+            onclick="closeLightbox(event)">&times;</button>
+        <div id="lightbox-stage" class="relative inline-block" onclick="toggleZoom(event)">
+            <img id="lightbox-img" class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in block"
+                src="" alt="Full view">
+            <div id="lightbox-overlay" class="photo-overlay"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox Logic -->
+    <script>
+        let isZoomed = false;
+
+        function showLightbox(src, overlayHtml = '') {
+            const modal = document.getElementById('lightbox-modal');
+            const img = document.getElementById('lightbox-img');
+            const overlay = document.getElementById('lightbox-overlay');
+            if (modal && img && overlay) {
+                img.src = src;
+                overlay.innerHTML = overlayHtml || '';
+                modal.classList.remove('hidden');
+                isZoomed = false; // reset zoom
+                img.className = "max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in block";
+                if (modal) modal.classList.add('items-center', 'justify-center');
+            }
+        }
+
+        function showReviewLightbox(src, requestGroupId) {
+            const overlayHtml = reviewOverlayByRequestGroup.get(String(requestGroupId)) || '';
+            showLightbox(src, overlayHtml);
+        }
+
+        function toggleZoom(e) {
+            e.stopPropagation();
+            isZoomed = !isZoomed;
+            const img = document.getElementById('lightbox-img');
+            const modal = document.getElementById('lightbox-modal');
+            if (isZoomed) {
+                img.className = "max-w-none max-h-none rounded-lg shadow-2xl cursor-zoom-out block";
+                if (modal) modal.classList.remove('items-center', 'justify-center');
+            } else {
+                img.className = "max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in block";
+                if (modal) modal.classList.add('items-center', 'justify-center');
+            }
+        }
+
+        function hideLightbox() {
+            const modal = document.getElementById('lightbox-modal');
+            const overlay = document.getElementById('lightbox-overlay');
+            if (overlay) overlay.innerHTML = '';
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function closeLightbox(e) {
+            const modal = document.getElementById('lightbox-modal');
+            if (modal && (e.target.id === 'lightbox-modal' || e.target.id === 'close-lightbox-btn' || e.target.tagName === 'BUTTON')) {
+                hideLightbox();
+            }
+        }
+    </script>
+
+</body>
+
+</html>

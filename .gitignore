@@ -1,0 +1,30 @@
+#--- Secrets ---
+
+#Ignore the environment file!
+
+.env
+
+#--- NEW: Ignore certificates and private keys ---
+
+certs/
+
+#--- Python ---
+
+#Bytecode and cache
+__pycache__/
+*.pyc
+
+#--- App-generated static assets ---
+static/
+static_data/
+
+#--- Docker ---
+
+#Ignore the local database data
+
+postgres_data/
+
+#--- OS Files ---
+
+.DS_Store
+

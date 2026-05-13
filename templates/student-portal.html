@@ -1,0 +1,2322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0d0d10;
+            --surface-alt: #141418;
+            --muted: #9ca3af;
+            --text: #f5f5f6;
+            --border: #1d1d24;
+            --primary: #a855f7;
+            --primary-strong: #9333ea;
+            --secondary: #1f1f24;
+            --secondary-strong: #16161a;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+            /* Alert Variables (Dark Mode Default) */
+            --alert-success-bg: rgba(34, 197, 94, 0.15);
+            --alert-success-text: #bbf7d0;
+            --alert-danger-bg: rgba(239, 68, 68, 0.18);
+            --alert-danger-text: #fecdd3;
+            --alert-warning-bg: rgba(245, 158, 11, 0.18);
+            --alert-warning-text: #fef3c7;
+            /* Button Text Variables (Dark Mode Default) */
+            --btn-success-text: #052e16;
+            /* Dark text on bright green */
+            --btn-danger-text: #ffffff;
+        }
+
+        body.light {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-alt: #f4f5f7;
+            --muted: #475569;
+            --text: #0f172a;
+            --border: #e5e7eb;
+            --primary: #4f46e5;
+            --primary-strong: #4338ca;
+            --secondary: #e5e7eb;
+            --secondary-strong: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+            /* Alert Variables (Light Mode) */
+            --alert-success-bg: rgba(34, 197, 94, 0.2);
+            --alert-success-text: #15803d;
+            --alert-danger-bg: rgba(239, 68, 68, 0.2);
+            --alert-danger-text: #b91c1c;
+            --alert-warning-bg: rgba(245, 158, 11, 0.2);
+            --alert-warning-text: #b45309;
+            /* Button Text Variables (Light Mode) */
+            --btn-success-text: #ffffff;
+            /* White text on darker green */
+            --btn-danger-text: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .form-card {
+            background-color: var(--surface);
+            border-radius: 0.75rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            width: 100%;
+            transition: all 0.3s ease-in-out;
+            margin: 2rem auto;
+            border: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-strong);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-strong);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--surface-alt);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--surface);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--btn-success-text);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--btn-danger-text);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-link {
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            background: var(--surface-alt);
+            color: var(--text);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .alert-success {
+            background-color: var(--alert-success-bg);
+            color: var(--alert-success-text);
+        }
+
+        .alert-danger {
+            background-color: var(--alert-danger-bg);
+            color: var(--alert-danger-text);
+        }
+
+        .alert-warning {
+            background-color: var(--alert-warning-bg);
+            color: var(--alert-warning-text);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        video {
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 0.5rem;
+            border: 2px solid var(--border);
+            background-color: #000;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .subject-list {
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .subject-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .subject-item-clickable {
+            cursor: pointer;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            transition: background 0.2s ease;
+        }
+
+        .subject-item-clickable:hover {
+            background-color: var(--surface-alt);
+        }
+
+        .subject-item:last-child {
+            border-bottom: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--surface-alt);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        .attendance-table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.875rem;
+            background: var(--surface-alt);
+        }
+
+        .attendance-table th {
+            background-color: var(--surface);
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .status-present {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-absent {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .status-medical_leave {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .status-other_leave {
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .status-source-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+        }
+
+        .status-source-manual {
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.35);
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        .annotation-image {
+            width: 100%;
+            max-width: 400px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .student-photo-card {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            background: var(--surface);
+        }
+
+        .student-photo-stage {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--surface-alt);
+            max-height: 480px;
+            max-width: 100%;
+            width: max-content;
+            margin: 1rem auto;
+            transition: max-height 0.3s ease-in-out;
+        }
+
+        .student-photo-stage img {
+            max-height: 480px;
+            max-width: 100%;
+            width: auto;
+            display: block;
+        }
+
+        .student-photo-stage.is-drawing {
+            max-height: 1200px;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .student-photo-stage.is-drawing img {
+            max-height: 1200px;
+            width: 100%;
+        }
+
+        .student-photo-overlay,
+        .student-draw-layer {
+            position: absolute;
+            inset: 0;
+        }
+
+        .student-photo-overlay {
+            pointer-events: none;
+        }
+
+        .student-draw-layer {
+            cursor: crosshair;
+        }
+
+        .student-photo-box {
+            position: absolute;
+            border: 2px solid #22c55e;
+            background: rgba(34, 197, 94, 0.12);
+            border-radius: 0.35rem;
+        }
+
+        .student-photo-box.pending {
+            border-style: dashed;
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.16);
+        }
+
+        .student-photo-box.pending-delete {
+            border-style: dashed;
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.18);
+        }
+
+        .student-photo-box.selected-delete {
+            border-style: dashed;
+            border-color: #fb7185;
+            background: rgba(244, 63, 94, 0.18);
+        }
+
+        .student-photo-box.local-add {
+            border-style: dashed;
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.18);
+        }
+
+        .student-photo-box.draft {
+            border-style: dashed;
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.18);
+        }
+
+        .student-photo-box-label {
+            position: absolute;
+            top: -1.6rem;
+            left: 0;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.1rem 0.4rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #fff;
+            white-space: nowrap;
+        }
+
+        .student-box-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .student-box-row:first-child {
+            border-top: none;
+        }
+
+        .student-review-summary {
+            margin-top: 0.9rem;
+            padding: 0.85rem 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            background: var(--surface-alt);
+        }
+
+        .student-review-summary h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .student-review-summary p {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .student-edit-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin-top: 0.85rem;
+        }
+
+        .student-edit-list {
+            margin-top: 0.85rem;
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .student-edit-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.65rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 0.8rem;
+            background: var(--surface-alt);
+            font-size: 0.84rem;
+        }
+
+        .student-edit-chip strong {
+            display: block;
+            color: var(--text);
+            margin-bottom: 0.12rem;
+        }
+
+        .student-inline-note {
+            margin-top: 0.7rem;
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .nav-brand:hover {
+            color: var(--primary-strong);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--surface-alt);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #video-recorder {
+            max-width: 500px;
+            margin: 1.5rem auto;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #000;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen dark" style="padding: 0;">
+    <script>
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+    </script>
+
+
+    <nav class="navbar">
+        <a href="{{ url_for('student.student_portal') }}" class="nav-brand">ClassCam Student Portal</a>
+        <div class="nav-actions">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">☀️</button>
+
+            {% if current_user.is_authenticated and session.get('user_type') == 'student' %}
+            <!-- Profile Photo -->
+            <button id="open-profile-photo-btn" type="button" class="profile-photo-container"
+                title="Update profile photo"
+                style="display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; overflow: hidden; background: var(--surface-alt); border: 1px solid var(--border); cursor: pointer; padding: 0;">
+                {% if current_user.profile_photo_url %}
+                <img src="{{ current_user.profile_photo_url }}" alt="Profile Photo"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    style="width: 1.5rem; height: 1.5rem; color: var(--muted);">
+                    <path fill-rule="evenodd"
+                        d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                        clip-rule="evenodd" />
+                </svg>
+                {% endif %}
+            </button>
+
+            <button id="open-change-password-btn" class="btn-outline btn-small whitespace-nowrap">Change
+                Password</button>
+            <a href="{{ url_for('main.logout') }}" class="btn-outline btn-small whitespace-nowrap"
+                style="color: var(--danger); border-color: var(--danger);">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div
+        class="{% if current_user.is_authenticated and session.get('user_type') == 'student' %}max-w-6xl mx-auto p-6 bg-[var(--surface)] border border-[var(--border)] rounded-xl mt-6{% else %}form-card{% endif %}">
+
+        <h1 id="main-title" class="text-3xl font-bold text-center mb-6">Student Portal</h1>
+
+        <!-- Message Area -->
+        <div id="message-area" class="text-center mb-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %} {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+            {% endfor %} {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Check if user is logged in -->
+        {% if current_user.is_authenticated and session.get('user_type') == 'student' %}
+
+        <!-- === VIEW 4: STUDENT DASHBOARD === -->
+        <div id="profile-view" class="space-y-6">
+
+            <!-- This part is the main subject list -->
+            <div id="subject-list-view">
+
+
+                <!-- Profile Details -->
+                <div class="p-4 rounded-lg border my-6"
+                    style="background: var(--surface-alt); border-color: var(--border);">
+                    <h3 class="text-lg font-semibold mb-2">Your Profile</h3>
+                    <div><strong>Roll Number:</strong> {{ current_user.roll_number }}</div>
+                    <div><strong>Email:</strong> {{ current_user.email }}</div>
+                    <div>
+                        <strong>Face Enrolled:</strong>
+                        {% if current_user.is_verified %}
+                        <span class="text-green-400 font-semibold">Yes</span>
+                        {% else %}
+                        <span class="text-red-400 font-semibold">No (Required)</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Update Face / Profile Section -->
+                <div>
+                    {% if not current_user.is_verified %}
+                    <p class="text-center text-red-600 font-medium mb-2">You must enroll your face to be marked present.
+                    </p>
+                    <button id="update-profile-btn" class="btn-primary">Enroll Face Data Now</button>
+                    {% else %}
+                    <button id="update-profile-btn" class="btn-secondary">Update My Profile / Re-record Face</button>
+                    {% endif %}
+                </div>
+
+                <!-- Subject Enrollment Section -->
+                <div class="mt-6 pt-6 border-t" style="border-color: var(--border);">
+                    <h3 class="text-xl font-semibold mb-3">My Enrolled Subjects</h3>
+                    <p class="text-sm text-gray-500 mb-2">Click on a subject to view your attendance.</p>
+                    <div class="subject-list">
+                        {% if enrolled_subjects %}
+                        {% for subject in enrolled_subjects %}
+                        <div class="subject-item subject-item-clickable"
+                            onclick="fetchSubjectData(this.dataset.subjectId, this.dataset.subjectName, this)"
+                            data-subject-id="{{ subject.id }}" data-subject-name="{{ subject.name }}">
+                            <div>
+                                <p class="font-medium text-indigo-600">{{ subject.name }}</p>
+                                <p class="text-sm text-gray-500">{{ subject.code }} · {{ subject.academic_year }} / {{
+                                    subject.semester }}</p>
+                            </div>
+                            <span class="text-gray-400">&rarr;</span>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-center text-gray-500">You are not enrolled in any subjects yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Available Subjects Section -->
+                {% if current_user.is_verified %}
+                <div class="mt-6 pt-6 border-t" style="border-color: var(--border);">
+                    <h3 class="text-xl font-semibold mb-3">Available Subjects to Enroll</h3>
+                    <div class="subject-list">
+                        {% if available_subjects %}
+                        {% for subject in available_subjects %}
+                        <div class="subject-item">
+                            <div>
+                                <p class="font-medium">{{ subject.name }}</p>
+                                <p class="text-sm text-gray-500">{{ subject.code }} · {{ subject.academic_year }} / {{
+                                    subject.semester }}</p>
+                            </div>
+                            <form action="{{ url_for('student.enroll_in_subject') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="subject_id" value="{{ subject.id }}">
+                                <button type="submit" class="btn-success btn-small">Enroll</button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p class="text-center text-gray-500">No other subjects are available to join at this time.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-6 pt-6 border-t" style="border-color: var(--border);">
+                    <p class="text-center text-red-600 font-medium">Complete face enrollment to unlock subject
+                        enrollment
+                        and attendance views.</p>
+                </div>
+                {% endif %}
+
+                <!-- Options moved to Navbar -->
+            </div>
+
+            <!-- === VIEW 5: SUBJECT DETAIL VIEW (Hidden by default) === -->
+            <div id="subject-detail-view" class="hidden space-y-6">
+                <button type="button" class="btn-link" onclick="showSubjectListView()">&larr; Back to All
+                    Subjects</button>
+
+                <h2 id="subject-detail-title" class="text-2xl font-semibold text-center">Subject Details</h2>
+
+                <!-- Attendance Stats Area -->
+                <div id="attendance-stats-area" class="stats-grid">
+                    <div class="stat-item"><span id="stat-present" class="stat-value">-</span><span
+                            class="stat-label">P</span></div>
+                    <div class="stat-item"><span id="stat-absent" class="stat-value">-</span><span
+                            class="stat-label">A</span></div>
+                    <div class="stat-item"><span id="stat-medical" class="stat-value">-</span><span
+                            class="stat-label">ML</span></div>
+                    <div class="stat-item"><span id="stat-other" class="stat-value">-</span><span
+                            class="stat-label">OL</span></div>
+                    <div class="stat-item"><span id="stat-total" class="stat-value">-</span><span
+                            class="stat-label">Total Marked</span></div>
+                    <div class="stat-item"><span id="stat-percentage" class="stat-value">- %</span><span
+                            class="stat-label">Attendance %</span></div>
+                </div>
+
+                <!-- Photos First -->
+                <div id="todays-photos-area" class="mt-6 pt-6 border-t">
+                    <h3 class="text-xl font-semibold text-center mb-4">Attendance Photos</h3>
+                    <p class="text-sm text-center text-gray-500 mb-4">You can add a missing box for yourself or request
+                        deletion of your own detected box. Every change goes to TA/Professor/Admin review first.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                        <select id="student-photo-date-select" class="input-field flex-grow">
+                            <option value="">-- Select Date --</option>
+                        </select>
+                    </div>
+                    <div id="student-photo-container" class="space-y-2">
+                        <p class="text-center text-gray-500">Select a date to view photos.</p>
+                    </div>
+                </div>
+
+                <!-- Attendance History Below Photos -->
+                <div id="attendance-history-area" class="mt-6 pt-6 border-t">
+                    <h3 class="text-xl font-semibold text-center mb-4">Your Attendance History</h3>
+                    <div id="history-table-container" class="overflow-x-auto max-h-60"> <!-- Scrollable history -->
+                        <p class="text-center text-gray-500">Loading history...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {% else %}
+        <!-- === VIEW 1: AUTH (Login / Register) === -->
+        <div id="auth-view">
+            <!-- Tabs -->
+            <div class="flex border-b mb-6">
+                <button id="login-tab-btn" class="tab-button active" onclick="showAuthTab('login')">Login</button>
+                <button id="register-tab-btn" class="tab-button" onclick="showAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div><label for="login_roll_number" class="block text-sm font-medium text-gray-700">Roll
+                        Number</label><input type="text" id="login_roll_number" name="roll_number" class="input-field"
+                        required></div>
+                <div><label for="login_password" class="block text-sm font-medium text-gray-700">Password</label><input
+                        type="password" id="login_password" name="password" class="input-field" required></div>
+                <div><button type="submit" class="btn-primary">Login</button></div>
+                <div class="text-center"><button type="button" class="btn-link"
+                        onclick="showAuthTab('forgot-password-step1')">Forgot Password?</button></div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="space-y-4 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div><label for="reg_roll_number" class="block text-sm font-medium text-gray-700">Roll
+                        Number</label><input type="text" id="reg_roll_number" name="roll_number" class="input-field"
+                        required></div>
+                <div><label for="reg_name" class="block text-sm font-medium text-gray-700">Full Name</label><input
+                        type="text" id="reg_name" name="name" class="input-field" required></div>
+                <div><label for="reg_email" class="block text-sm font-medium text-gray-700">Email Address</label><input
+                        type="email" id="reg_email" name="email" class="input-field" required></div>
+                <div><label for="reg_password" class="block text-sm font-medium text-gray-700">Create Password (min
+                        6)</label><input type="password" id="reg_password" name="password" class="input-field" required
+                        minlength="6"></div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="reg_terms" name="terms" class="mr-2" required>
+                    <label for="reg_terms" class="text-sm text-gray-700">I agree to the <button type="button"
+                            onclick="showTermsModal()" class="text-indigo-600 hover:text-indigo-800 underline">Terms and
+                            Conditions</button></label>
+                </div>
+                <div><button type="submit" class="btn-primary">Register & Send Code</button></div>
+            </form>
+
+            <!-- Forgot Password - Step 1 -->
+            <form id="forgot-password-form-step1" class="space-y-4 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h2 class="text-xl font-semibold text-center mb-4">Reset Password</h2>
+                <p class="text-sm text-gray-600 text-center mb-4">Enter Roll Number to get reset code.</p>
+                <div><label for="forgot_roll_number" class="block text-sm font-medium text-gray-700">Roll
+                        Number</label><input type="text" id="forgot_roll_number" name="roll_number" class="input-field"
+                        required></div>
+                <div><button type="submit" class="btn-primary">Send Reset Code</button></div>
+                <div class="text-center"><button type="button" class="btn-link" onclick="showAuthTab('login')">Back to
+                        Login</button></div>
+            </form>
+
+            <!-- Forgot Password - Step 2 -->
+            <form id="forgot-password-form-step2" class="space-y-4 hidden">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <h2 class="text-xl font-semibold text-center mb-4">Enter Reset Code</h2>
+                <input type="hidden" id="reset_roll_number" name="roll_number">
+                <div><label for="reset_otp" class="block text-sm font-medium text-gray-700">Verification Code
+                        (OTP)</label><input type="text" id="reset_otp" name="otp" class="input-field" required
+                        pattern="\d{6}"></div>
+                <div><label for="reset_new_password" class="block text-sm font-medium text-gray-700">New Password (min
+                        6)</label><input type="password" id="reset_new_password" name="new_password" class="input-field"
+                        required minlength="6"></div>
+                <div><button type="submit" class="btn-primary">Reset Password</button></div>
+                <div class="text-center"><button type="button" class="btn-link" onclick="showAuthTab('login')">Back to
+                        Login</button></div>
+            </form>
+
+            <div class="text-center mt-6">
+                <a href="{{ url_for('main.index') }}"
+                    class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Back
+                    to Welcome Page</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- VIEW 2 & 3: OTP and Enroll Modals (now hidden, controlled by JS) -->
+
+        <!-- View 2: OTP Verification -->
+        <div id="otp-view" class="hidden space-y-4">
+            <h2 id="otp-title" class="text-xl font-semibold text-center">Verify Your Identity</h2>
+            <input type="hidden" id="otp_roll_number" name="roll_number">
+            <input type="hidden" id="otp_context" value="register">
+            <div id="otp-status-box" class="alert alert-success hidden">
+                <div id="otp-status-text">A verification code has been sent to your email.</div>
+                <div id="resend-timer" class="text-sm font-semibold text-green-800 mt-1"></div>
+            </div>
+            <div>
+                <label for="otp_code" class="block text-sm font-medium text-gray-700">Enter 6-Digit Code</label>
+                <input type="text" id="otp_code" name="otp" class="input-field" required pattern="\d{6}">
+            </div>
+            <div><button id="verify-otp-btn" class="btn-primary">Verify and Continue</button></div>
+            <div class="text-right">
+                <button id="resend-otp-btn" type="button" class="btn-outline btn-small hidden">Resend OTP</button>
+            </div>
+            <div class="text-center"><button type="button" class="btn-link" onclick="goBackToAuth()">Back</button></div>
+        </div>
+
+        <!-- View 3: Enroll Face -->
+        <div id="enroll-view" class="hidden">
+            <h2 id="enroll-title" class="text-xl font-semibold mb-4 text-center">Enroll Your Face</h2>
+            <div id="enroll-instructions" class="text-gray-600 mb-4 text-center">
+                <p>Please provide a short, clear video or a clear photo of your face. Follow these tips:</p>
+                <ul class="list-disc list-inside mt-2 text-left max-w-md mx-auto">
+                    <li>Ensure good, bright, and even lighting.</li>
+                    <li>Look directly at the camera.</li>
+                    <li>For video, slowly turn your head slightly left and right.</li>
+                    <li>Remove any hats, sunglasses, or masks.</li>
+                </ul>
+            </div>
+
+            <!-- Enrollment Method Toggle -->
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <button id="show-recorder-btn" class="btn-primary btn-small">Live Record</button>
+                <button id="show-uploader-btn" class="btn-secondary btn-small">Upload File</button>
+            </div>
+
+            <!-- Video Recorder -->
+            <div id="video-recorder" class="relative">
+                <video id="video-feed" class="w-full h-auto bg-black rounded-md" autoplay muted playsinline></video>
+                <canvas id="canvas" class="hidden"></canvas>
+                <div class="flex items-center justify-center space-x-4 pt-2">
+                    <button id="start-record-btn" class="btn-primary">Start 5s Recording</button>
+                </div>
+            </div>
+
+            <!-- File Uploader -->
+            <div id="file-uploader" class="hidden">
+                <label for="enroll-file-input" class="block text-sm font-medium text-gray-700 mb-2">Select a video or
+                    image file.</label>
+                <input type="file" id="enroll-file-input" accept="video/*,image/*"
+                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                <button id="upload-enroll-btn" class="btn-primary mt-4">Upload and Enroll</button>
+            </div>
+
+            <p id="enroll-status" class="mt-4 text-sm text-center text-gray-500"></p>
+        </div>
+
+    </div>
+
+    <!-- 
+      FIX: Define URLs in a separate <script> tag BEFORE the main logic.
+      This ensures Flask renders them as strings before the JS file tries to use them.
+    -->
+    <script>
+        const urlForGetStudentDetails = "{{ url_for('student.get_student_details') }}";
+        const urlForStudentLogin = "{{ url_for('student.student_login') }}";
+        const urlForStudentRegister = "{{ url_for('student.student_register') }}";
+        const urlForRequestPasswordResetOtp = "{{ url_for('student.request_password_reset_otp') }}";
+        const urlForResetPasswordWithOtp = "{{ url_for('student.reset_password_with_otp') }}";
+        const urlForVerifyOtp = "{{ url_for('student.verify_otp') }}";
+        const urlForVerifyUpdateOtp = "{{ url_for('student.verify_update_otp') }}";
+        const urlForEnrollStudentFace = "{{ url_for('student.enroll_student_face') }}";
+        const urlForRequestUpdateOtp = "{{ url_for('student.request_update_otp') }}";
+        const urlForResendOtp = "{{ url_for('student.resend_otp') }}";
+        // This URL is NEW and was missing from the V13 file
+        const urlForGetStudentAttendanceData = "{{ url_for('student.get_student_attendance_data') }}";
+        const urlForGetStudentPhotoDates = "{{ url_for('student.get_student_photo_dates', subject_id=0) }}";
+        const urlForGetStudentPhotos = "{{ url_for('student.get_student_photos', subject_id=0, date_str='0') }}";
+        const urlForStudentSubmitBoundingBoxRequest = "{{ url_for('student.student_submit_bounding_box_request') }}";
+        const urlForIndex = "{{ url_for('main.index') }}";
+        const urlForLogout = "{{ url_for('main.logout') }}";
+        // Enroll/Unenroll are standard forms, no JS URL needed
+
+        function buildStudentPhotoDatesUrl(subjectId) {
+            return urlForGetStudentPhotoDates.replace(/\/0$/, `/${encodeURIComponent(String(subjectId))}`);
+        }
+
+        function buildStudentPhotosUrl(subjectId, date) {
+            return urlForGetStudentPhotos.replace(
+                /\/0\/0$/,
+                `/${encodeURIComponent(String(subjectId))}/${encodeURIComponent(String(date))}`
+            );
+        }
+    </script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const root = document.documentElement;
+            const toggleBtn = document.getElementById('theme-toggle');
+            const saved = localStorage.getItem('theme') || 'dark';
+            applyTheme(saved);
+            toggleBtn?.addEventListener('click', () => {
+                const next = body.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(next);
+            });
+            function applyTheme(mode) {
+                body.classList.remove('light', 'dark');
+                body.classList.add(mode);
+                root.style.colorScheme = mode === 'dark' ? 'dark' : 'light';
+                localStorage.setItem('theme', mode);
+                if (toggleBtn) toggleBtn.textContent = mode === 'dark' ? '☀️' : '🌙';
+            }
+        })();
+    </script>
+
+
+    <script>
+        // --- State Management ---
+        let currentView = 'auth'; // 'auth', 'otp', 'enroll', 'profile'
+        let currentAuthTab = 'login';
+        let otpContext = 'register';
+        let studentData = null; // Caches student data on login
+        let currentSubjectId = null;
+        let videoStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let resendTimerInterval; // To hold the interval ID
+        let studentPhotoState = [];
+        let studentPhotoEdits = {};
+        let currentAddDraft = null;
+        let activeDrawContext = null;
+
+        // --- DOM Elements ---
+        const views = {
+            auth: document.getElementById('auth-view'),
+            otp: document.getElementById('otp-view'),
+            enroll: document.getElementById('enroll-view'),
+            profile: document.getElementById('profile-view'),
+            subjectList: document.getElementById('subject-list-view'), // Main profile dashboard
+            subjectDetail: document.getElementById('subject-detail-view') // Attendance detail view
+        };
+        const authForms = { login: document.getElementById('login-form'), register: document.getElementById('register-form'), forgotPassword1: document.getElementById('forgot-password-form-step1'), forgotPassword2: document.getElementById('forgot-password-form-step2') };
+        const authTabBtns = { login: document.getElementById('login-tab-btn'), register: document.getElementById('register-tab-btn') };
+        const messageArea = document.getElementById('message-area');
+        const mainTitle = document.getElementById('main-title');
+        // OTP
+        const otpRollInput = document.getElementById('otp_roll_number'); const otpCodeInput = document.getElementById('otp_code'); const otpContextInput = document.getElementById('otp_context'); const verifyOtpBtn = document.getElementById('verify-otp-btn'); const otpTitle = document.getElementById('otp-title');
+        const otpStatusBox = document.getElementById('otp-status-box'); const otpStatusText = document.getElementById('otp-status-text');
+        const resendOtpBtn = document.getElementById('resend-otp-btn');
+        const resendTimerSpan = document.getElementById('resend-timer');
+        // Enroll
+        const videoFeed = document.getElementById('video-feed');
+        const canvas = document.getElementById('canvas');
+        const startRecordBtn = document.getElementById('start-record-btn');
+        const enrollStatus = document.getElementById('enroll-status');
+        const enrollTitle = document.getElementById('enroll-title');
+        const enrollInstructions = document.getElementById('enroll-instructions');
+        const showRecorderBtn = document.getElementById('show-recorder-btn');
+        const showUploaderBtn = document.getElementById('show-uploader-btn');
+        const videoRecorder = document.getElementById('video-recorder');
+        const fileUploader = document.getElementById('file-uploader');
+        const enrollFileInput = document.getElementById('enroll-file-input');
+        const uploadEnrollBtn = document.getElementById('upload-enroll-btn');
+        // Profile
+        const updateProfileBtn = document.getElementById('update-profile-btn');
+        // Forgot
+        const forgotRollInput = document.getElementById('forgot_roll_number'); const resetRollInput = document.getElementById('reset_roll_number');
+        // Subject Detail Elements
+        const subjectDetailTitle = document.getElementById('subject-detail-title');
+        const statPresent = document.getElementById('stat-present');
+        const statAbsent = document.getElementById('stat-absent');
+        const statMedical = document.getElementById('stat-medical');
+        const statOther = document.getElementById('stat-other');
+        const statTotal = document.getElementById('stat-total');
+        const statPercentage = document.getElementById('stat-percentage');
+        const historyTableContainer = document.getElementById('history-table-container');
+        const studentPhotoDateSelect = document.getElementById('student-photo-date-select');
+        const studentPhotoContainer = document.getElementById('student-photo-container');
+
+        // --- UI Navigation ---
+        function showView(viewName) {
+            console.log("Showing view:", viewName);
+            // Special handling for profile view which has sub-views
+            if (viewName === 'profile') {
+                views.auth?.classList.add('hidden');
+                views.otp?.classList.add('hidden');
+                views.enroll?.classList.add('hidden');
+                views.profile?.classList.remove('hidden');
+                showSubjectListView(); // Default to list view
+            } else if (viewName === 'subjectDetail') {
+                views.subjectList?.classList.add('hidden');
+                views.subjectDetail?.classList.remove('hidden');
+                mainTitle.textContent = "Loading Subject..."; // Title will be set by fetch
+            } else {
+                Object.keys(views).forEach(k => views[k]?.classList.toggle('hidden', k !== viewName));
+            }
+
+            currentView = viewName;
+            if (currentView !== 'otp') {
+                resetResendTimer();
+                otpStatusBox?.classList.add('hidden');
+            }
+
+            if (viewName !== 'subjectDetail') {
+                mainTitle.textContent = getMainTitle(viewName);
+            }
+
+            messageArea.innerHTML = '';
+            if (viewName !== 'enroll' && videoStream) stopCamera();
+            if (viewName === 'enroll') {
+                setupCamera();
+                showEnrollMode('recorder'); // Default to recorder
+            }
+        }
+
+        function showEnrollMode(mode) {
+            if (mode === 'recorder') {
+                videoRecorder?.classList.remove('hidden');
+                fileUploader?.classList.add('hidden');
+                showRecorderBtn?.classList.replace('btn-secondary', 'btn-primary');
+                showUploaderBtn?.classList.replace('btn-primary', 'btn-secondary');
+                setupCamera();
+            } else {
+                videoRecorder?.classList.add('hidden');
+                fileUploader?.classList.remove('hidden');
+                showUploaderBtn?.classList.replace('btn-secondary', 'btn-primary');
+                showRecorderBtn?.classList.replace('btn-primary', 'btn-secondary');
+                stopCamera();
+            }
+        }
+
+        function showSubjectListView() {
+            views.subjectList?.classList.remove('hidden');
+            views.subjectDetail?.classList.add('hidden');
+            mainTitle.textContent = getMainTitle('profile'); // Reset title
+            currentSubjectId = null;
+            studentPhotoState = [];
+            currentAddDraft = null;
+            document.querySelectorAll('.subject-item-clickable').forEach(el => el.classList.remove('active'));
+            if (studentPhotoDateSelect) {
+                studentPhotoDateSelect.innerHTML = '<option value="">-- Select Date --</option>';
+                studentPhotoDateSelect.disabled = true;
+            }
+            if (studentPhotoContainer) {
+                studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Select a subject and date to view photos.</p>';
+            }
+        }
+
+        function showAuthTab(tabName) {
+            Object.keys(authForms).forEach(k => {
+                const fk = k === 'forgotPassword1' ? 'forgot-password-step1' : k === 'forgotPassword2' ? 'forgot-password-step2' : k;
+                authForms[k]?.classList.toggle('hidden', fk !== tabName);
+            });
+            Object.keys(authTabBtns).forEach(k => authTabBtns[k]?.classList.toggle('active', k === tabName));
+            const tabContainer = authTabBtns.login?.parentElement;
+            if (tabContainer) tabContainer.style.display = (tabName.startsWith('forgot-password')) ? 'none' : 'flex';
+            currentAuthTab = tabName;
+        }
+        function getMainTitle(v) {
+            // Use current_user if available (it's rendered in the template)
+            let userName = (typeof current_user !== 'undefined' && current_user.name) ? current_user.name : (studentData ? studentData.name : 'Student');
+            switch (v) {
+                case 'auth': return 'Student Portal';
+                case 'otp': return 'Verify Identity';
+                case 'enroll': return 'Enroll Face';
+                case 'profile': return `Welcome, ${userName}!`;
+                default: return 'Student Portal';
+            }
+        }
+        function goBackToAuth() {
+            // If logged in (e.g., from update OTP), go to profile. Else, go to login.
+            if (document.getElementById('profile-view')) { // Check if profile view exists
+                showView('profile');
+            } else {
+                if (otpContext === 'reset-password') showAuthTab('forgot-password-step1');
+                else showAuthTab('login');
+                showView('auth');
+            }
+        }
+
+        // --- API Call Helper ---
+        async function apiCall(endpoint, formData, method = 'POST') {
+            setLoading(true); messageArea.innerHTML = '';
+            try {
+                const friendlyError = (response, rawMessage = '') => {
+                    const message = String(rawMessage || '').trim();
+                    const messageLower = message.toLowerCase();
+                    if (response.status === 401) return 'Session expired. Please log in again.';
+                    if (response.status === 403) return 'You are not allowed to perform this action.';
+                    if (response.status === 400 && (messageLower.includes('csrf') || messageLower.includes('token'))) {
+                        return 'Security token expired. Refresh the page and try again.';
+                    }
+                    return message || `Request failed (HTTP ${response.status}).`;
+                };
+
+                const response = await fetch(endpoint, {
+                    headers: { 'X-CSRFToken': csrfToken, 'Accept': 'application/json' },
+                    method: method,
+                    // Only add body if formData is provided (for GET requests)
+                    ...(formData && { body: formData })
+                });
+
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                if (!contentType.includes('application/json')) {
+                    const textBody = await response.text();
+                    throw new Error(friendlyError(response, textBody));
+                }
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(friendlyError(response, result.error));
+                return result;
+            } catch (error) {
+                console.error(`API ${endpoint} Error:`, error);
+                showMessage(messageArea, `Error: ${error.message}`, true);
+                return null;
+            } finally { setLoading(false); }
+        }
+        function setLoading(isLoading) { document.querySelectorAll('button, input').forEach(el => el.disabled = isLoading); }
+        function showMessage(el, msg, isError = false) { if (!el) return; el.innerHTML = `<div class="alert ${isError ? 'alert-danger' : 'alert-success'}">${msg}</div>`; el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+        // --- Resend OTP Logic ---
+        function resetResendTimer() {
+            clearInterval(resendTimerInterval);
+            if (resendOtpBtn) { resendOtpBtn.classList.add('hidden'); resendOtpBtn.disabled = true; }
+            if (resendTimerSpan) { resendTimerSpan.textContent = ''; resendTimerSpan.classList.remove('hidden'); }
+        }
+        function startResendTimer(duration = 600) { // default 10 minutes
+            resetResendTimer();
+            let timer = duration;
+            if (resendOtpBtn) resendOtpBtn.classList.add('hidden');
+
+            resendTimerInterval = setInterval(() => {
+                const minutes = Math.floor(timer / 60);
+                let seconds = timer % 60;
+                seconds = seconds < 10 ? '0' + seconds : seconds;
+                if (resendTimerSpan) resendTimerSpan.textContent = `Resend in ${minutes}:${seconds}`;
+
+                if (--timer < 0) {
+                    clearInterval(resendTimerInterval);
+                    if (resendOtpBtn) {
+                        resendOtpBtn.classList.remove('hidden'); // Show button
+                        resendOtpBtn.disabled = false;
+                    }
+                    if (resendTimerSpan) resendTimerSpan.textContent = 'You can request a new code.';
+                }
+            }, 1000);
+        }
+        function showOtpSent(message, duration = 600) {
+            if (otpStatusText) otpStatusText.textContent = message;
+            if (otpStatusBox) otpStatusBox.classList.remove('hidden');
+            startResendTimer(duration);
+        }
+
+        // --- Event Listeners ---
+
+        // This runs if the auth-view is present (i.e., user is NOT logged in)
+        if (views.auth && !views.auth.classList.contains('hidden')) {
+            authForms.login?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(authForms.login);
+                const result = await apiCall(urlForStudentLogin, formData);
+                if (result && result.reload) {
+                    window.location.reload();
+                } else if (result) {
+                    window.location.reload();
+                }
+            });
+            authForms.register?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(authForms.register);
+                const roll = formData.get('roll_number');
+                const result = await apiCall(urlForStudentRegister, formData);
+                if (result) {
+                    otpRollInput.value = roll;
+                    otpContextInput.value = 'register'; otpContext = 'register';
+                    otpTitle.textContent = "Verify Your Registration";
+                    showView('otp');
+                    showOtpSent(result.message || 'OTP sent to your email. Expires in 10 minutes.', 600);
+                }
+            });
+            authForms.forgotPassword1?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(authForms.forgotPassword1);
+                const roll = formData.get('roll_number');
+                const result = await apiCall(urlForRequestPasswordResetOtp, formData);
+                if (result) {
+                    showMessage(messageArea, result.message, false);
+                    resetRollInput.value = roll;
+                    otpContext = 'reset-password';
+                    showAuthTab('forgot-password-step2');
+                }
+            });
+            authForms.forgotPassword2?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(authForms.forgotPassword2);
+                formData.set('roll_number', resetRollInput.value);
+                const result = await apiCall(urlForResetPasswordWithOtp, formData);
+                if (result) {
+                    showMessage(messageArea, result.message, false);
+                    showAuthTab('login');
+                    authForms.forgotPassword1.reset(); authForms.forgotPassword2.reset();
+                }
+            });
+        }
+
+        // This runs for all pages, finds the OTP button if it exists
+        verifyOtpBtn?.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('roll_number', otpRollInput.value);
+            formData.append('otp', otpCodeInput.value);
+            const currentOtpCtx = otpContextInput.value;
+            let endpoint = currentOtpCtx === 'register' ? urlForVerifyOtp : currentOtpCtx === 'update' ? urlForVerifyUpdateOtp : null;
+            if (!endpoint) { showMessage(messageArea, 'Invalid context.', true); return; }
+
+            const result = await apiCall(endpoint, formData);
+            if (result) {
+                showMessage(messageArea, result.message, false);
+                if (currentOtpCtx === 'register' || currentOtpCtx === 'update') {
+                    enrollTitle.textContent = currentOtpCtx === 'register' ? "Enroll Your Face" : "Update Your Face Data";
+                    showView('enroll');
+                }
+                otpCodeInput.value = '';
+            }
+        });
+
+        resendOtpBtn?.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('roll_number', otpRollInput.value);
+            formData.append('context', otpContextInput.value); // 'register' or 'update'
+            const result = await apiCall(urlForResendOtp, formData);
+            if (result) {
+                showOtpSent(result.message || 'New OTP sent to your email.', 600);
+            }
+        });
+
+        // ENROLLMENT UI LISTENERS
+        showRecorderBtn?.addEventListener('click', () => showEnrollMode('recorder'));
+        showUploaderBtn?.addEventListener('click', () => showEnrollMode('uploader'));
+
+        startRecordBtn?.addEventListener('click', () => {
+            if (!videoStream || !videoStream.active) {
+                showMessage(messageArea, 'Camera not active. Please grant permission and try again.', true);
+                return;
+            }
+            startRecordBtn.disabled = true; enrollStatus.textContent = 'Recording...'; recordedChunks = [];
+            try {
+                const options = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type));
+                if (!options) throw new Error('No supported mimeType');
+                mediaRecorder = new MediaRecorder(videoStream, { mimeType: options });
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+                mediaRecorder.onstop = async () => {
+                    enrollStatus.textContent = 'Processing...';
+                    const blob = new Blob(recordedChunks, { type: options });
+                    const formData = new FormData();
+                    formData.append('video', blob, 'enroll.webm');
+                    const result = await apiCall(urlForEnrollStudentFace, formData);
+                    if (result && result.reload) {
+                        window.location.reload();
+                    } else if (result) {
+                        window.location.reload();
+                    } else {
+                        enrollStatus.textContent = 'Enroll failed. See error above.'; startRecordBtn.disabled = false;
+                    }
+                };
+                mediaRecorder.start();
+                setTimeout(() => { if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); }, 5000);
+            } catch (error) {
+                console.error("Rec Error:", error); showMessage(messageArea, `Rec error: ${error.message}`, true);
+                enrollStatus.textContent = 'Rec failed.'; startRecordBtn.disabled = false; mediaRecorder?.stop();
+            }
+        });
+
+        uploadEnrollBtn?.addEventListener('click', async () => {
+            const file = enrollFileInput.files[0];
+            if (!file) {
+                showMessage(messageArea, 'Please select a file to upload.', true);
+                return;
+            }
+            enrollStatus.textContent = 'Uploading...';
+            const formData = new FormData();
+            formData.append('video', file, file.name); // Use 'video' key
+
+            const result = await apiCall(urlForEnrollStudentFace, formData);
+            if (result && result.reload) {
+                window.location.reload();
+            } else if (result) {
+                window.location.reload();
+            } else {
+                enrollStatus.textContent = 'Upload failed. See error above.';
+            }
+        });
+
+        const requestProfileUpdateOtp = async () => {
+            const result = await apiCall(urlForRequestUpdateOtp, new FormData(), 'POST'); // Use POST
+            if (result) {
+                otpRollInput.value = "{{ current_user.roll_number }}"; // Get from template
+                otpContextInput.value = 'update'; otpContext = 'update';
+                otpTitle.textContent = "Verify to Update Profile";
+                showView('otp');
+                showOtpSent('Profile update code sent to your email. Expires in 10 minutes.', 600);
+            }
+        };
+
+        // This runs if the profile-view is present (i.e., user IS logged in)
+        updateProfileBtn?.addEventListener('click', requestProfileUpdateOtp);
+
+        // --- Camera Handling ---
+        async function setupCamera() {
+            if (!videoFeed) return;
+            console.log("Setting up camera...");
+            try {
+                if (videoStream?.active) return;
+                stopCamera();
+                // 1. Try front camera first (user)
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+                videoFeed.srcObject = stream; videoStream = stream; startRecordBtn.disabled = false; enrollStatus.textContent = '';
+                console.log("Front camera active.");
+            } catch (err) {
+                console.warn("Front camera failed:", err.name);
+                try {
+                    // 2. Fallback to rear camera
+                    console.log("Trying rear camera...");
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+                    videoFeed.srcObject = stream; videoStream = stream; startRecordBtn.disabled = false; enrollStatus.textContent = '';
+                    console.log("Rear camera active.");
+                } catch (envErr) {
+                    console.error("All cameras failed:", envErr);
+                    let errMsg = `Camera Error: ${envErr.message}.`;
+                    if (envErr.name === 'NotAllowedError') errMsg = "Camera permission denied. Allow in browser settings.";
+                    else if (envErr.name === 'NotFoundError') errMsg = "No camera found.";
+                    else if (envErr.name === 'NotReadableError') errMsg = "Camera is in use by another app.";
+                    showMessage(messageArea, errMsg, true);
+                    if (startRecordBtn) startRecordBtn.disabled = true; enrollStatus.textContent = 'Cam access failed.'; videoStream = null;
+                }
+            }
+        }
+        function stopCamera() { if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; if (videoFeed) videoFeed.srcObject = null; } }
+
+        // --- NEW: Fetch and Display Subject-Specific Attendance ---
+        async function fetchSubjectData(subjectId, subjectName, clickedEl) {
+            if (!subjectId) return;
+            console.log("Fetching data for subject:", subjectId);
+            currentSubjectId = subjectId;
+            document.querySelectorAll('.subject-item-clickable').forEach(el => el.classList.remove('active'));
+            if (clickedEl) clickedEl.classList.add('active');
+
+            // Show the detail view and hide the list view
+            views.subjectList?.classList.add('hidden');
+            views.subjectDetail?.classList.remove('hidden');
+            mainTitle.textContent = `Report for ${subjectName}`;
+            subjectDetailTitle.textContent = subjectName;
+
+            setLoading(true);
+            // Clear previous data
+            historyTableContainer.innerHTML = '<p class="text-center text-gray-500">Loading history...</p>';
+            studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Loading photos...</p>';
+            statPresent.textContent = '-';
+            statAbsent.textContent = '-';
+            statMedical.textContent = '-';
+            statOther.textContent = '-';
+            statTotal.textContent = '-';
+            statPercentage.textContent = '- %';
+
+            try {
+                // Use GET request, send subject_id as query param
+                const response = await fetch(`${urlForGetStudentAttendanceData}?subject_id=${subjectId}`, { method: 'GET' });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch attendance data.');
+                }
+
+                // Display Stats
+                statPresent.textContent = data.present_count ?? '-';
+                statAbsent.textContent = data.absent_count ?? '-';
+                statMedical.textContent = data.medical_leave_count ?? '-';
+                statOther.textContent = data.other_leave_count ?? '-';
+                statTotal.textContent = data.total_marked ?? '-';
+                statPercentage.textContent = (data.percentage ?? '-') + '%';
+
+                // Display History Table
+                if (data.attendance_history && data.attendance_history.length > 0) {
+                    let tbl = '<table class="attendance-table"><thead><tr><th>Date</th><th>Status</th><th>Source</th></tr></thead><tbody>';
+                    data.attendance_history.forEach(r => {
+                        const statusLabel = r.status.replace('_', ' ').charAt(0).toUpperCase() + r.status.replace('_', ' ').slice(1);
+                        const cls = `status-${r.status}`;
+                        const sourceClass = r.is_manual ? 'status-source-chip status-source-manual' : 'status-source-chip';
+                        tbl += `<tr><td>${r.date}</td><td><span class="${cls}">${statusLabel}</span></td><td><span class="${sourceClass}">${r.source_label || 'Photo'}</span></td></tr>`;
+                    });
+                    tbl += '</tbody></table>';
+                    historyTableContainer.innerHTML = tbl;
+                } else {
+                    historyTableContainer.innerHTML = '<p class="text-center text-gray-500">No attendance history found for this subject.</p>';
+                }
+
+                // Fetch and populate photo dates
+                fetchStudentPhotoDates(subjectId);
+
+            } catch (error) {
+                console.error("Fetch Att Error:", error);
+                showMessage(messageArea, `Failed to load subject data: ${error.message}`, true);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function fetchStudentPhotoDates(subjectId) {
+            studentPhotoState = [];
+            studentPhotoEdits = {};
+            currentAddDraft = null;
+            studentPhotoDateSelect.innerHTML = '<option value="">-- Select Date --</option>';
+            studentPhotoDateSelect.disabled = true;
+            studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Loading dates...</p>';
+
+            if (!subjectId) {
+                studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Select a subject and date to view photos.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(buildStudentPhotoDatesUrl(subjectId));
+                const dates = await response.json();
+                if (!response.ok) {
+                    throw new Error(dates.error || 'Failed to load dates.');
+                }
+
+                if (dates.length > 0) {
+                    dates.forEach(date => {
+                        const option = document.createElement('option');
+                        option.value = date;
+                        option.textContent = date;
+                        studentPhotoDateSelect.appendChild(option);
+                    });
+                    studentPhotoDateSelect.disabled = false;
+                    studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Select a date to view photos.</p>';
+                } else {
+                    studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">No photos found for this subject.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching student photo dates:", error);
+                studentPhotoContainer.innerHTML = '<p class="text-center text-red-500">Error loading dates.</p>';
+            }
+        }
+
+        async function fetchStudentPhotos(subjectId, date) {
+            studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Loading photos...</p>';
+            studentPhotoEdits = {};
+            currentAddDraft = null;
+
+            if (!subjectId || !date) {
+                studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">Select a subject and date to view photos.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(buildStudentPhotosUrl(subjectId, date));
+                const photoPayload = await response.json();
+                if (!response.ok) {
+                    throw new Error(photoPayload.error || 'Failed to load photos.');
+                }
+
+                if (photoPayload.length > 0) {
+                    studentPhotoState = photoPayload;
+                    renderStudentPhotoCards();
+                } else {
+                    studentPhotoState = [];
+                    studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">No photos found for this date.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching student photos:", error);
+                studentPhotoState = [];
+                studentPhotoContainer.innerHTML = '<p class="text-center text-red-500">Error loading photos.</p>';
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function getStudentPhotoById(photoId) {
+            return studentPhotoState.find(photo => String(photo.id) === String(photoId));
+        }
+
+        function studentBoxStyle(photo, bbox) {
+            const top = (bbox.top / photo.image_height) * 100;
+            const left = (bbox.left / photo.image_width) * 100;
+            const width = ((bbox.right - bbox.left) / photo.image_width) * 100;
+            const height = ((bbox.bottom - bbox.top) / photo.image_height) * 100;
+            return `top:${top}%;left:${left}%;width:${width}%;height:${height}%;`;
+        }
+
+        function studentBoxMarkup(photo, bbox, label, className = '') {
+            return `<div class="student-photo-box ${className}" style="${studentBoxStyle(photo, bbox)}"><span class="student-photo-box-label">${escapeHtml(label)}</span></div>`;
+        }
+
+        function getStudentPhotoEditState(photoId, create = false) {
+            const key = String(photoId);
+            if (!studentPhotoEdits[key] && create) {
+                studentPhotoEdits[key] = { addBoxes: [], removeBoxIds: [] };
+            }
+            return studentPhotoEdits[key] || { addBoxes: [], removeBoxIds: [] };
+        }
+
+        function hasStudentPhotoEdits(photoId) {
+            const editState = getStudentPhotoEditState(photoId);
+            return editState.addBoxes.length > 0 || editState.removeBoxIds.length > 0;
+        }
+
+        function cleanupStudentPhotoEdits(photoId) {
+            const key = String(photoId);
+            const editState = studentPhotoEdits[key];
+            if (!editState) return;
+            if (!editState.addBoxes.length && !editState.removeBoxIds.length) {
+                delete studentPhotoEdits[key];
+            }
+        }
+
+        function formatStudentBoxSummary(bbox) {
+            return `L${bbox.left} · T${bbox.top} · R${bbox.right} · B${bbox.bottom}`;
+        }
+
+        function photoPendingDeleteIds(photo) {
+            const ids = new Set();
+            (photo.pending_requests || []).forEach((requestGroup) => {
+                (requestGroup.delete_boxes || []).forEach((box) => {
+                    if (box.source_box?.id) {
+                        ids.add(String(box.source_box.id));
+                    } else if (box.source_box_id) {
+                        ids.add(String(box.source_box_id));
+                    }
+                });
+            });
+            return ids;
+        }
+
+        function renderPendingRequestSummary(photo) {
+            const pendingRequests = photo.pending_requests || [];
+            if (!pendingRequests.length) return '';
+
+            return pendingRequests.map((requestGroup, index) => {
+                const addCount = (requestGroup.add_boxes || []).length;
+                const deleteCount = (requestGroup.delete_boxes || []).length;
+                const parts = [];
+                if (deleteCount) parts.push(`${deleteCount} delete${deleteCount === 1 ? '' : 's'}`);
+                if (addCount) parts.push(`${addCount} add${addCount === 1 ? '' : 's'}`);
+                const summary = parts.length ? parts.join(' and ') : 'changes';
+                return `
+                    <div class="student-review-summary">
+                        <h4>Pending review ${index + 1}</h4>
+                        <p>Your last submission for this photo is waiting for TA or faculty review. Proposed ${escapeHtml(summary)}. You can submit another change set after this one is reviewed.</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStudentPhotoCards() {
+            if (!studentPhotoContainer) return;
+            if (!studentPhotoState.length) {
+                studentPhotoContainer.innerHTML = '<p class="text-center text-gray-500">No photos found for this date.</p>';
+                return;
+            }
+
+            studentPhotoContainer.innerHTML = studentPhotoState.map((photo) => {
+                const editState = getStudentPhotoEditState(photo.id);
+                const pendingDeleteIds = photoPendingDeleteIds(photo);
+                const isDrawing = currentAddDraft && String(currentAddDraft.photoId) === String(photo.id);
+                const canEditPhoto = photo.can_submit_changes;
+                const overlayParts = [];
+
+                (photo.approved_boxes || []).forEach((box, boxIndex) => {
+                    const isPendingDelete = pendingDeleteIds.has(String(box.id));
+                    const isSelectedDelete = editState.removeBoxIds.includes(String(box.id));
+                    let label = `Approved ${boxIndex + 1}`;
+                    let className = '';
+                    if (isPendingDelete) {
+                        label = `Pending remove ${boxIndex + 1}`;
+                        className = 'pending-delete';
+                    } else if (isSelectedDelete) {
+                        label = `Marked remove ${boxIndex + 1}`;
+                        className = 'selected-delete';
+                    }
+                    overlayParts.push(studentBoxMarkup(photo, box.bounding_box, label, className));
+                });
+
+                (photo.pending_requests || []).forEach((requestGroup) => {
+                    (requestGroup.add_boxes || []).forEach((box, boxIndex) => {
+                        overlayParts.push(studentBoxMarkup(photo, box.bounding_box, `Pending add ${boxIndex + 1}`, 'pending'));
+                    });
+                });
+
+                editState.addBoxes.forEach((bbox, boxIndex) => {
+                    overlayParts.push(studentBoxMarkup(photo, bbox, `New box ${boxIndex + 1}`, 'local-add'));
+                });
+
+                const approvedRows = (photo.approved_boxes || []).length
+                    ? photo.approved_boxes.map((box, boxIndex) => {
+                        const isPendingDelete = pendingDeleteIds.has(String(box.id));
+                        const isSelectedDelete = editState.removeBoxIds.includes(String(box.id));
+                        const statusLabel = isPendingDelete
+                            ? 'Pending staff removal'
+                            : (isSelectedDelete ? 'Will be removed in this request' : 'Approved');
+                        const actionMarkup = !canEditPhoto
+                            ? '<span class="text-xs text-gray-500">Locked while request is pending</span>'
+                            : `
+                                <button
+                                    type="button"
+                                    class="btn-outline btn-small"
+                                    data-student-action="toggle-remove-box"
+                                    data-photo-id="${photo.id}"
+                                    data-box-id="${box.id}">
+                                    ${isSelectedDelete ? 'Keep box' : 'Remove box'}
+                                </button>
+                            `;
+                        return `
+                            <div class="student-box-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                    <span class="text-sm">Box ${boxIndex + 1}: ${statusLabel}</span>
+                                    ${isPendingDelete ? '<span class="text-xs text-gray-500">Awaiting review</span>' : actionMarkup}
+                                </div>
+                                ${box.reviewed_by && box.is_approved ? `
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                                    ${box.reviewed_by_profile_photo_url
+                                    ? `<img src="${escapeHtml(box.reviewed_by_profile_photo_url)}" alt="Teacher Avatar" style="width: 1.5rem; height: 1.5rem; border-radius: 50%; object-fit: cover;">`
+                                    : `<div style="width: 1.5rem; height: 1.5rem; border-radius: 50%; background: var(--surface-alt); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 1rem; height: 1rem; color: var(--muted);">
+                                                <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>`
+                                }
+                                    <span class="text-xs text-gray-500">Approved by ${escapeHtml(box.reviewed_by)}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')
+                    : '<p class="text-sm text-gray-500">No approved box for you in this photo.</p>';
+
+                const localAddRows = editState.addBoxes.length
+                    ? `
+                        <div class="student-edit-list">
+                            ${editState.addBoxes.map((bbox, boxIndex) => `
+                                <div class="student-edit-chip">
+                                    <div>
+                                        <strong>New box ${boxIndex + 1}</strong>
+                                        <span>${escapeHtml(formatStudentBoxSummary(bbox))}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="btn-outline btn-small"
+                                        data-student-action="remove-local-add"
+                                        data-photo-id="${photo.id}"
+                                        data-box-index="${boxIndex}">
+                                        Remove
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `
+                    : '';
+
+                const editToolbar = canEditPhoto
+                    ? `
+                        <div class="student-edit-toolbar">
+                            <button
+                                type="button"
+                                class="btn-secondary btn-small"
+                                data-student-action="${isDrawing ? 'stop-add' : 'start-add'}"
+                                data-photo-id="${photo.id}">
+                                ${isDrawing ? 'Stop Drawing' : 'Draw New Box'}
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-success btn-small"
+                                data-student-action="submit-request"
+                                data-photo-id="${photo.id}"
+                                ${hasStudentPhotoEdits(photo.id) ? '' : 'disabled'}>
+                                Submit Changes
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-outline btn-small"
+                                data-student-action="clear-photo-edits"
+                                data-photo-id="${photo.id}"
+                                ${hasStudentPhotoEdits(photo.id) || isDrawing ? '' : 'disabled'}>
+                                Reset
+                            </button>
+                        </div>
+                    `
+                    : '';
+
+                const drawingNote = canEditPhoto && isDrawing
+                    ? '<p class="student-inline-note">Drag on the photo to add one or more new boxes. Use Submit Changes when your delete and add set is ready.</p>'
+                    : '';
+
+                return `
+                    <div class="student-photo-card">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="font-medium">${escapeHtml(photo.captured_photo_name)}</p>
+                                <p class="text-xs text-gray-500">Only your own boxes can be changed. A TA or professor will review the full change set.</p>
+                            </div>
+                        </div>
+                        ${editToolbar}
+                        ${drawingNote}
+                        <div class="student-photo-stage mt-4 ${isDrawing ? 'is-drawing' : ''}">
+                            <img src="${photo.raw_image_path}" alt="Attendance photo" class="cursor-pointer" onclick="showLightbox(this.src)">
+                            <div class="student-photo-overlay">${overlayParts.join('')}</div>
+                            ${canEditPhoto && isDrawing ? `<div class="student-draw-layer" data-photo-id="${photo.id}"></div>` : ''}
+                        </div>
+                        ${renderPendingRequestSummary(photo)}
+                        <div class="mt-3">${approvedRows}</div>
+                        ${localAddRows}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startDraftForPhoto(photoId) {
+            const photo = getStudentPhotoById(photoId);
+            if (!photo || !photo.can_submit_changes) return;
+            currentAddDraft = { photoId: photo.id };
+            renderStudentPhotoCards();
+        }
+
+        function stopDraftForPhoto(photoId) {
+            if (currentAddDraft && String(currentAddDraft.photoId) === String(photoId)) {
+                currentAddDraft = null;
+            }
+            renderStudentPhotoCards();
+        }
+
+        function clearPhotoEdits(photoId) {
+            delete studentPhotoEdits[String(photoId)];
+            if (currentAddDraft && String(currentAddDraft.photoId) === String(photoId)) {
+                currentAddDraft = null;
+            }
+            renderStudentPhotoCards();
+        }
+
+        function toggleApprovedBoxRemoval(photoId, boxId) {
+            const photo = getStudentPhotoById(photoId);
+            if (!photo || !photo.can_submit_changes) return;
+            const editState = getStudentPhotoEditState(photoId, true);
+            const boxIdString = String(boxId);
+            if (editState.removeBoxIds.includes(boxIdString)) {
+                editState.removeBoxIds = editState.removeBoxIds.filter((value) => value !== boxIdString);
+            } else {
+                editState.removeBoxIds.push(boxIdString);
+            }
+            cleanupStudentPhotoEdits(photoId);
+            renderStudentPhotoCards();
+        }
+
+        function removeDraftBox(photoId, boxIndex) {
+            const editState = getStudentPhotoEditState(photoId, true);
+            editState.addBoxes.splice(Number(boxIndex), 1);
+            cleanupStudentPhotoEdits(photoId);
+            renderStudentPhotoCards();
+        }
+
+        function pointFromMouse(event, rect) {
+            const x = Math.min(Math.max(event.clientX - rect.left, 0), rect.width);
+            const y = Math.min(Math.max(event.clientY - rect.top, 0), rect.height);
+            return { x, y };
+        }
+
+        function startDrawForPhoto(layer, photo, event) {
+            if (!currentAddDraft || String(currentAddDraft.photoId) !== String(photo.id)) return;
+            const rect = layer.getBoundingClientRect();
+            const start = pointFromMouse(event, rect);
+            activeDrawContext = { layer, photo, rect, start };
+            const draftEl = document.createElement('div');
+            draftEl.className = 'student-photo-box draft';
+            draftEl.innerHTML = '<span class="student-photo-box-label">Draft</span>';
+            layer.appendChild(draftEl);
+            updateDraftElement(start);
+            window.addEventListener('mousemove', handleDraftMove);
+            window.addEventListener('mouseup', handleDraftEnd);
+        }
+
+        function updateDraftElement(point) {
+            if (!activeDrawContext) return;
+            const draftEl = activeDrawContext.layer.querySelector('.student-photo-box.draft');
+            if (!draftEl) return;
+            const left = Math.min(activeDrawContext.start.x, point.x);
+            const top = Math.min(activeDrawContext.start.y, point.y);
+            const width = Math.abs(point.x - activeDrawContext.start.x);
+            const height = Math.abs(point.y - activeDrawContext.start.y);
+            draftEl.style.left = `${left}px`;
+            draftEl.style.top = `${top}px`;
+            draftEl.style.width = `${width}px`;
+            draftEl.style.height = `${height}px`;
+        }
+
+        function handleDraftMove(event) {
+            if (!activeDrawContext) return;
+            updateDraftElement(pointFromMouse(event, activeDrawContext.rect));
+        }
+
+        function handleDraftEnd(event) {
+            if (!activeDrawContext) return;
+            const end = pointFromMouse(event, activeDrawContext.rect);
+            const layer = activeDrawContext.layer;
+            const photo = activeDrawContext.photo;
+            const left = Math.min(activeDrawContext.start.x, end.x);
+            const top = Math.min(activeDrawContext.start.y, end.y);
+            const right = Math.max(activeDrawContext.start.x, end.x);
+            const bottom = Math.max(activeDrawContext.start.y, end.y);
+            const bbox = {
+                left: Math.round((left / activeDrawContext.rect.width) * photo.image_width),
+                top: Math.round((top / activeDrawContext.rect.height) * photo.image_height),
+                right: Math.round((right / activeDrawContext.rect.width) * photo.image_width),
+                bottom: Math.round((bottom / activeDrawContext.rect.height) * photo.image_height),
+            };
+
+            activeDrawContext = null;
+            window.removeEventListener('mousemove', handleDraftMove);
+            window.removeEventListener('mouseup', handleDraftEnd);
+            if (layer) {
+                layer.innerHTML = '';
+            }
+            if (bbox.right - bbox.left >= 12 && bbox.bottom - bbox.top >= 12) {
+                const editState = getStudentPhotoEditState(photo.id, true);
+                editState.addBoxes.push(bbox);
+            } else {
+                showMessage(messageArea, 'Bounding box is too small. Draw a larger box.', true);
+            }
+            renderStudentPhotoCards();
+        }
+
+        async function submitPhotoChangeRequest(photoId) {
+            const photo = getStudentPhotoById(photoId);
+            if (!photo || !photo.can_submit_changes) {
+                showMessage(messageArea, 'This photo already has a pending review request.', true);
+                return;
+            }
+
+            const editState = getStudentPhotoEditState(photoId);
+            if (!editState.addBoxes.length && !editState.removeBoxIds.length) {
+                showMessage(messageArea, 'Add or remove at least one box before submitting.', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo_id', photoId);
+            formData.append('remove_box_ids', JSON.stringify(editState.removeBoxIds));
+            formData.append('add_boxes', JSON.stringify(editState.addBoxes));
+
+            const result = await apiCall(urlForStudentSubmitBoundingBoxRequest, formData);
+            if (result) {
+                delete studentPhotoEdits[String(photoId)];
+                showMessage(messageArea, result.message, false);
+                currentAddDraft = null;
+                fetchStudentPhotos(currentSubjectId, studentPhotoDateSelect.value);
+            }
+        }
+
+        // Event Listeners for student photo display dropdowns
+        if (studentPhotoDateSelect) {
+            studentPhotoDateSelect.addEventListener('change', (e) => {
+                const subjectId = currentSubjectId;
+                const date = e.target.value;
+                if (subjectId) {
+                    fetchStudentPhotos(subjectId, date);
+                }
+            });
+        }
+
+        if (studentPhotoContainer) {
+            studentPhotoContainer.addEventListener('click', (event) => {
+                const actionEl = event.target.closest('[data-student-action]');
+                if (!actionEl) return;
+
+                const action = actionEl.dataset.studentAction;
+                if (action === 'start-add') {
+                    startDraftForPhoto(actionEl.dataset.photoId);
+                    setTimeout(() => {
+                        const stage = document.querySelector(`.student-photo-stage.is-drawing`);
+                        if (stage) stage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                } else if (action === 'stop-add') {
+                    stopDraftForPhoto(actionEl.dataset.photoId);
+                } else if (action === 'toggle-remove-box') {
+                    toggleApprovedBoxRemoval(actionEl.dataset.photoId, actionEl.dataset.boxId);
+                } else if (action === 'remove-local-add') {
+                    removeDraftBox(actionEl.dataset.photoId, actionEl.dataset.boxIndex);
+                } else if (action === 'clear-photo-edits') {
+                    clearPhotoEdits(actionEl.dataset.photoId);
+                } else if (action === 'submit-request') {
+                    submitPhotoChangeRequest(actionEl.dataset.photoId);
+                }
+            });
+
+            studentPhotoContainer.addEventListener('mousedown', (event) => {
+                const layer = event.target.closest('.student-draw-layer');
+                if (!layer) return;
+                const photo = getStudentPhotoById(layer.dataset.photoId);
+                if (!photo) return;
+                startDrawForPhoto(layer, photo, event);
+            });
+        }
+        // --- Terms Modal Functions ---
+        function showTermsModal() {
+            document.getElementById('terms-modal').classList.remove('hidden');
+        }
+
+        function hideTermsModal() {
+            document.getElementById('terms-modal').classList.add('hidden');
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in (profile view is rendered) or not (auth view is rendered)
+            if (document.getElementById('profile-view')) {
+                // User is logged in, profile view is visible.
+                // We show the subject list view by default.
+                views.subjectList?.classList.remove('hidden');
+                views.subjectDetail?.classList.add('hidden');
+                mainTitle.textContent = "Welcome, {{ current_user.name }}!";
+            } else if (document.getElementById('auth-view')) {
+                // User is not logged in, auth view is visible.
+                showView('auth');
+                showAuthTab('login');
+            }
+        });
+    </script>
+
+    <!-- Terms & Conditions Modal -->
+    <div id="terms-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-2xl font-bold text-center mb-4">Terms & Conditions – CCAS (ClassCam Attendance System)
+                </h3>
+                <p class="text-sm text-gray-600 mb-4">Last updated: [05/01/2026]</p>
+                <div class="prose max-w-none text-sm">
+                    <p>By accessing or using CCAS (ClassCam Attendance System) ("the System", "we", "our"), you agree to
+                        be bound by these Terms & Conditions. If you do not agree, do not use the System.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">1. Purpose of the System</h4>
+                    <p>CCAS is an academic tool designed to:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Capture classroom images and/or video</li>
+                        <li>Perform automated attendance marking</li>
+                        <li>Store attendance-related metadata</li>
+                        <li>Support research and development in computer vision and machine learning</li>
+                    </ul>
+                    <p>The System is intended strictly for educational and academic use.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">2. Data Collected</h4>
+                    <p>The System may collect and process the following data:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Facial images and/or video frames</li>
+                        <li>Facial embeddings or derived biometric features</li>
+                        <li>Attendance records (presence, timestamps, class identifiers)</li>
+                        <li>Device and system metadata (IP address, browser type, access logs)</li>
+                    </ul>
+                    <p>No personal data is collected beyond what is necessary for attendance and research purposes.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">3. Consent</h4>
+                    <p>By participating in classes where CCAS is used, students explicitly consent to:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Capture of their images/video during class</li>
+                        <li>Processing of this data for attendance verification</li>
+                        <li>Long-term storage of the data</li>
+                        <li>Use of the data for machine learning model training, evaluation, and improvement</li>
+                    </ul>
+                    <p>Participation in the class implies consent unless explicitly opted out through institutional
+                        procedures.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">4. Data Retention</h4>
+                    <p>All collected data may be stored indefinitely</p>
+                    <p>Data may be retained even after:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Course completion</li>
+                        <li>Graduation</li>
+                        <li>End of academic term</li>
+                    </ul>
+                    <p>This retention is necessary for:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Long-term machine learning research</li>
+                        <li>Model reproducibility</li>
+                        <li>Performance benchmarking</li>
+                        <li>Academic publications (in anonymized form)</li>
+                    </ul>
+
+                    <h4 class="font-semibold mt-4 mb-2">5. Data Usage for Machine Learning</h4>
+                    <p>Collected data may be used for:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Training and fine-tuning ML models</li>
+                        <li>Research in computer vision, biometrics, and attendance automation</li>
+                        <li>Internal testing and academic experimentation</li>
+                    </ul>
+                    <p><strong>Important:</strong></p>
+                    <ul class="list-disc ml-4">
+                        <li>Data will not be sold</li>
+                        <li>Data will not be used for commercial advertising</li>
+                        <li>Any public release will be fully anonymized</li>
+                    </ul>
+
+                    <h4 class="font-semibold mt-4 mb-2">6. Data Sharing</h4>
+                    <p>Data may be shared only with:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Authorized faculty members</li>
+                        <li>Research collaborators within the institution</li>
+                        <li>Academic reviewers (anonymized)</li>
+                    </ul>
+                    <p>No third-party commercial sharing is permitted.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">7. Security</h4>
+                    <p>Reasonable technical and organizational measures are taken to:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Prevent unauthorized access</li>
+                        <li>Protect stored data</li>
+                        <li>Secure machine learning datasets</li>
+                    </ul>
+                    <p>However, no system is 100% secure, and CCAS does not guarantee absolute security.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">8. User Responsibilities</h4>
+                    <p>Users agree to:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Not misuse or attempt to reverse engineer the System</li>
+                        <li>Not upload false, manipulated, or malicious data</li>
+                        <li>Comply with institutional academic policies</li>
+                    </ul>
+
+                    <h4 class="font-semibold mt-4 mb-2">9. Limitation of Liability</h4>
+                    <p>CCAS is provided "as is".</p>
+                    <p>We are not liable for:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Attendance discrepancies due to technical failure</li>
+                        <li>Misidentification by machine learning models</li>
+                        <li>Any indirect or consequential damages</li>
+                    </ul>
+                    <p>Final attendance authority remains with the instructor.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">10. Right to Modify</h4>
+                    <p>We reserve the right to:</p>
+                    <ul class="list-disc ml-4">
+                        <li>Update these Terms at any time</li>
+                        <li>Modify system functionality</li>
+                        <li>Expand machine learning research scope</li>
+                    </ul>
+                    <p>Continued use of the System implies acceptance of updated terms.</p>
+
+                    <h4 class="font-semibold mt-4 mb-2">11. Governing Law</h4>
+                    <p>These Terms are governed by the laws of India and subject to the jurisdiction of local courts.
+                    </p>
+
+                    <h4 class="font-semibold mt-4 mb-2">12. Contact</h4>
+                    <p>For questions or concerns regarding CCAS or data usage, contact: <a
+                            href="mailto:m25csa001@iitj.ac.in" class="text-indigo-600">g24ait2057@iitj.ac.in</a></p>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button onclick="hideTermsModal()"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Profile Photo Modal -->
+    <div id="student-profile-photo-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: var(--surface); color: var(--text); padding: 2rem; border-radius: 0.5rem; max-width: 400px; width: 90%; border: 1px solid var(--border);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Update Profile Photo</h2>
+            <form id="student-profile-photo-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Upload a photo (JPG/PNG)</label>
+                    <input type="file" id="student_profile_photo" name="profile_photo" accept="image/jpeg,image/png"
+                        style="width: 100%; font-size: 0.875rem;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="button" id="close-student-profile-photo-btn" class="btn-outline"
+                        style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="flex: 1;">Save Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Student Profile Photo Modal
+        const spModal = document.getElementById('student-profile-photo-modal');
+        const spForm = document.getElementById('student-profile-photo-form');
+        const spOpenBtn = document.getElementById('open-profile-photo-btn');
+        const spCloseBtn = document.getElementById('close-student-profile-photo-btn');
+        const spFileInput = document.getElementById('student_profile_photo');
+
+        if (spOpenBtn) spOpenBtn.onclick = () => { if (spModal) spModal.style.display = 'flex'; };
+        if (spCloseBtn) spCloseBtn.onclick = () => { if (spModal) spModal.style.display = 'none'; spForm?.reset(); };
+        if (spModal) spModal.onclick = (e) => { if (e.target === spModal) { spModal.style.display = 'none'; spForm?.reset(); } };
+
+        if (spForm) {
+            spForm.onsubmit = async (e) => {
+                e.preventDefault();
+                if (!spFileInput || spFileInput.files.length === 0) { alert('Please select a photo.'); return; }
+                const btn = spForm.querySelector('button[type="submit"]');
+                const txt = btn.textContent;
+                btn.disabled = true; btn.textContent = 'Uploading...';
+                try {
+                    const result = await apiCall("{{ url_for('student.upload_profile_photo') }}", new FormData(spForm), 'POST');
+                    if (result) {
+                        if (spModal) spModal.style.display = 'none';
+                        spForm.reset();
+                        window.location.reload();
+                    }
+                } finally {
+                    btn.disabled = false; btn.textContent = txt;
+                }
+            };
+        }
+    </script>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div
+            style="background: var(--surface); color: var(--text); padding: 2rem; border-radius: 0.5rem; max-width: 400px; width: 90%; border: 1px solid var(--border);">
+            <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Change Password</h2>
+            <form id="change-password-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Current
+                        Password</label>
+                    <input type="password" id="cp_current_password" name="current_password" class="input-field" required
+                        style="width: 100%;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">New
+                        Password (min 6 chars)</label>
+                    <input type="password" id="cp_new_password" name="new_password" class="input-field" required
+                        minlength="6" style="width: 100%;">
+                </div>
+                <div>
+                    <label
+                        style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem;">Confirm
+                        New Password</label>
+                    <input type="password" id="cp_confirm_password" name="confirm_password" class="input-field" required
+                        minlength="6" style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button type="submit" class="btn-primary" style="flex: 1;">Change Password</button>
+                    <button type="button" id="close-change-password-btn" class="btn-outline"
+                        style="flex: 1;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        // Change Password Modal
+        const cpModal = document.getElementById('change-password-modal');
+        const cpForm = document.getElementById('change-password-form');
+        const cpOpenBtn = document.getElementById('open-change-password-btn');
+        const cpCloseBtn = document.getElementById('close-change-password-btn');
+
+        if (cpOpenBtn) cpOpenBtn.onclick = () => cpModal.style.display = 'flex';
+        if (cpCloseBtn) cpCloseBtn.onclick = () => { cpModal.style.display = 'none'; cpForm.reset(); };
+        if (cpModal) cpModal.onclick = (e) => { if (e.target === cpModal) { cpModal.style.display = 'none'; cpForm.reset(); } };
+
+        if (cpForm) {
+            cpForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = cpForm.querySelector('button[type="submit"]');
+                const txt = btn.textContent;
+                const newPwd = document.getElementById('cp_new_password').value;
+                const confirmPwd = document.getElementById('cp_confirm_password').value;
+                if (newPwd !== confirmPwd) { alert('Passwords do not match'); return; }
+                btn.disabled = true; btn.textContent = 'Changing...';
+                try {
+                    const res = await fetch('/change-password', { method: 'POST', headers: { 'X-CSRFToken': csrfToken }, body: new FormData(cpForm) });
+                    const data = await res.json();
+                    alert(data.message || data.error);
+                    if (res.ok) {
+                        cpModal.style.display = 'none';
+                        cpForm.reset();
+                        window.location.reload();
+                    }
+                } catch (err) { alert('Error: ' + err.message); }
+                finally { btn.disabled = false; btn.textContent = txt; }
+            };
+        }
+    </script>
+
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal"
+        class="fixed fixed-layout inset-0 bg-black bg-opacity-80 overflow-auto h-full w-full hidden z-50 flex items-center justify-center p-4"
+        onclick="closeLightbox(event)">
+        <button id="close-lightbox-btn"
+            class="fixed top-4 right-4 text-white text-3xl font-bold cursor-pointer bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-90 z-50"
+            onclick="document.getElementById('lightbox-modal').classList.add('hidden')">&times;</button>
+        <img id="lightbox-img" class="max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in"
+            src="" alt="Full view" onclick="toggleZoom(event)">
+    </div>
+
+    <!-- Lightbox Logic -->
+    <script>
+        let isZoomed = false;
+
+        function showLightbox(src) {
+            const modal = document.getElementById('lightbox-modal');
+            const img = document.getElementById('lightbox-img');
+            if (modal && img) {
+                img.src = src;
+                modal.classList.remove('hidden');
+                isZoomed = false; // reset zoom
+                img.className = "max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in";
+                if (modal) modal.classList.add('items-center', 'justify-center');
+            }
+        }
+
+        function toggleZoom(e) {
+            e.stopPropagation();
+            isZoomed = !isZoomed;
+            const img = document.getElementById('lightbox-img');
+            const modal = document.getElementById('lightbox-modal');
+            if (isZoomed) {
+                img.className = "max-w-none max-h-none rounded-lg shadow-2xl cursor-zoom-out block";
+                if (modal) modal.classList.remove('items-center', 'justify-center');
+            } else {
+                img.className = "max-w-full max-h-screen object-contain rounded-lg shadow-2xl cursor-zoom-in";
+                if (modal) modal.classList.add('items-center', 'justify-center');
+            }
+        }
+
+        function closeLightbox(e) {
+            const modal = document.getElementById('lightbox-modal');
+            if (modal && (e.target.id === 'lightbox-modal' || e.target.id === 'close-lightbox-btn' || e.target.tagName === 'BUTTON')) {
+                modal.classList.add('hidden');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

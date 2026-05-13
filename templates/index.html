@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0d0d10;
+            --surface-alt: #141418;
+            --text: #f5f5f6;
+            --muted: #9ca3af;
+            --border: #1d1d24;
+            --primary: #a855f7;
+            --secondary: #22c55e;
+            --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        body.light {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-alt: #f4f5f7;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e5e7eb;
+            --primary: #4f46e5;
+            --secondary: #16a34a;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .hero-card {
+            background-color: var(--surface);
+            border-radius: 0.75rem;
+            padding: 4rem 2.5rem;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .btn-link-card {
+            display: block;
+            padding: 2rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-top: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .btn-link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-student {
+            background-color: rgba(139, 92, 246, 0.15);
+            color: var(--primary);
+        }
+
+        .btn-student:hover {
+            background-color: rgba(139, 92, 246, 0.25);
+        }
+
+        .btn-teacher {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: var(--secondary);
+        }
+
+        .btn-teacher:hover {
+            background-color: rgba(34, 197, 94, 0.25);
+        }
+
+        .hero-title {
+            color: #ffffff;
+        }
+
+        .hero-subtitle {
+            color: #cbd5e1;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+    </style>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+
+<body class="min-h-screen p-4 flex items-center justify-center dark">
+    <script>
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+    </script>
+
+
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">☀️</button>
+
+    <div class="hero-card">
+        <h1 class="text-3xl font-bold hero-title mb-4">Welcome to the Attendance System</h1>
+        <p class="text-lg hero-subtitle mb-8">Please select your role to continue.</p>
+
+        <div>
+            <!-- Links to the correct portals -->
+            <a href="{{ url_for('student.student_portal') }}" class="btn-link-card btn-student">
+                I am a Student
+            </a>
+
+            <a href="{{ url_for('teacher.teacher_portal') }}" class="btn-link-card btn-teacher">
+                I am a Staff Member
+            </a>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    (function () {
+        const body = document.body;
+        const root = document.documentElement;
+        const toggleBtn = document.getElementById('theme-toggle');
+        const saved = localStorage.getItem('theme') || 'dark';
+        applyTheme(saved);
+        toggleBtn?.addEventListener('click', () => {
+            const next = body.classList.contains('dark') ? 'light' : 'dark';
+            applyTheme(next);
+        });
+        function applyTheme(mode) {
+            body.classList.remove('light', 'dark');
+            body.classList.add(mode);
+            root.style.colorScheme = mode === 'dark' ? 'dark' : 'light';
+            localStorage.setItem('theme', mode);
+            if (toggleBtn) toggleBtn.textContent = mode === 'dark' ? '☀️' : '🌙';
+        }
+    })();
+</script>
+
+</html>

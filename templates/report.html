@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Report</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --surface: #0d0d10;
+            --surface-alt: #141418;
+            --text: #f5f5f6;
+            --muted: #9ca3af;
+            --border: #1d1d24;
+            --primary: #a855f7;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --status-present: #22c55e;
+            --status-absent: #ef4444;
+            --status-medical: #f59e0b;
+            --status-other: #6366f1;
+            --shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        body.light {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface-alt: #f4f5f7;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #e5e7eb;
+            --primary: #4f46e5;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --status-present: #16a34a;
+            --status-absent: #dc2626;
+            --status-medical: #d97706;
+            --status-other: #4f46e5;
+            --shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .table-container {
+            max-width: 95%;
+            margin: 0 auto;
+            background-color: var(--surface);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            height: calc(100vh - 2rem);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .table-scroll {
+            overflow: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            position: relative;
+            isolation: isolate;
+        }
+
+        table {
+            width: 100%;
+            position: relative;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 1200px;
+            --col-sr-width: 48px;
+            --col-roll-width: 144px;
+            --col-name-width: 160px;
+            --col-present-width: 70px;
+            --col-stat-width: 66px;
+            --col-percent-width: 80px;
+        }
+
+        th,
+        td {
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            background: var(--surface-alt);
+            color: var(--text);
+            background-clip: padding-box;
+        }
+
+        th {
+            background-color: var(--surface);
+            font-weight: 700;
+            color: var(--muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: sticky;
+            top: 0;
+            z-index: 12;
+        }
+
+        td {
+            font-size: 0.875rem;
+        }
+
+        tbody tr:hover td:not(.status-cell) {
+            background-color: var(--surface);
+        }
+
+        .status-select {
+            padding: 0.2rem 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background-color: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            min-width: 72px;
+            font-size: 0.875rem;
+        }
+
+        .status-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .status-select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-select.status-present {
+            color: var(--status-present);
+            border-color: rgba(34, 197, 94, 0.45);
+            background-color: rgba(34, 197, 94, 0.12);
+        }
+
+        .status-select.status-absent {
+            color: var(--status-absent);
+            border-color: rgba(239, 68, 68, 0.45);
+            background-color: rgba(239, 68, 68, 0.12);
+        }
+
+        .status-select.status-medical_leave {
+            color: var(--status-medical);
+            border-color: rgba(245, 158, 11, 0.45);
+            background-color: rgba(245, 158, 11, 0.12);
+        }
+
+        .status-select.status-other_leave {
+            color: var(--status-other);
+            border-color: rgba(99, 102, 241, 0.45);
+            background-color: rgba(99, 102, 241, 0.12);
+        }
+
+        .status-present {
+            color: var(--status-present);
+            font-weight: 700;
+        }
+
+        .status-absent {
+            color: var(--status-absent);
+            font-weight: 700;
+        }
+
+        .status-medical_leave {
+            color: var(--status-medical);
+            font-weight: 700;
+        }
+
+        .status-other_leave {
+            color: var(--status-other);
+            font-weight: 700;
+        }
+
+        .status-na {
+            color: var(--muted);
+        }
+
+        .status-cell,
+        .status-pill {
+            font-weight: 700;
+        }
+
+        .status-cell {
+            text-align: center;
+            border: 1px solid transparent;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.16rem 0.45rem;
+            border-radius: 999px;
+            line-height: 1.1;
+            border: 1px solid transparent;
+            min-width: 2.6rem;
+            font-size: 0.72rem;
+        }
+
+        .status-cell.status-present,
+        .status-pill.status-present {
+            color: var(--status-present);
+            background-color: rgba(34, 197, 94, 0.12);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .status-cell.status-absent,
+        .status-pill.status-absent {
+            color: var(--status-absent);
+            background-color: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-cell.status-medical_leave,
+        .status-pill.status-medical_leave {
+            color: var(--status-medical);
+            background-color: rgba(245, 158, 11, 0.12);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-cell.status-other_leave,
+        .status-pill.status-other_leave {
+            color: var(--status-other);
+            background-color: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .status-cell.status-percent,
+        .status-pill.status-percent {
+            color: var(--primary);
+            background-color: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.28);
+        }
+
+        .status-pill.status-na {
+            color: var(--muted);
+            background-color: rgba(148, 163, 184, 0.12);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+
+        .attendance-cell,
+        .attendance-readonly {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            min-height: 2.2rem;
+        }
+
+        .manual-outline {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            border-radius: 0.45rem;
+        }
+
+        .btn-download {
+            background-color: var(--success);
+            color: #0b1b0f;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .btn-download:hover {
+            filter: brightness(1.05);
+        }
+
+        .stats-col {
+            font-weight: 600;
+        }
+
+        .percentage-col {
+            font-weight: 700;
+        }
+
+        .daily-total-label {
+            text-align: right;
+            padding-right: 1rem;
+        }
+
+        /* Sticky Columns */
+        .col-sr {
+            position: sticky;
+            left: 0;
+            background-color: var(--surface-alt);
+            z-index: 20;
+            border-right: 1px solid var(--border);
+            width: var(--col-sr-width);
+            min-width: var(--col-sr-width);
+            box-shadow: inset -1px 0 0 var(--border);
+            text-align: center;
+            padding-left: 0.35rem;
+            padding-right: 0.35rem;
+        }
+
+        .col-roll {
+            position: sticky;
+            left: var(--col-sr-width);
+            background-color: var(--surface-alt);
+            z-index: 19;
+            border-right: 1px solid var(--border);
+            width: var(--col-roll-width);
+            min-width: var(--col-roll-width);
+            box-shadow: inset -1px 0 0 var(--border);
+        }
+
+        .col-name {
+            position: sticky;
+            left: calc(var(--col-sr-width) + var(--col-roll-width));
+            background-color: var(--surface-alt);
+            z-index: 18;
+            border-right: 1px solid var(--border);
+            width: var(--col-name-width);
+            min-width: var(--col-name-width);
+            box-shadow: inset -1px 0 0 var(--border);
+        }
+
+        thead .col-sr,
+        thead .col-roll,
+        thead .col-name {
+            background-color: var(--surface);
+            z-index: 60;
+        }
+
+        .col-present {
+            width: var(--col-present-width);
+            min-width: var(--col-present-width);
+            text-align: center;
+        }
+
+        .col-absent,
+        .col-ml,
+        .col-ol,
+        .col-percent {
+            width: var(--col-stat-width);
+            min-width: var(--col-stat-width);
+            text-align: center;
+        }
+
+        .col-percent {
+            width: var(--col-percent-width);
+            min-width: var(--col-percent-width);
+            font-weight: 700;
+        }
+
+        thead tr.totals-header-row th {
+            position: sticky;
+            top: var(--header-offset, 2.75rem);
+            z-index: 150;
+        }
+
+        thead tr.totals-header-row .col-sr,
+        thead tr.totals-header-row .col-roll,
+        thead tr.totals-header-row .col-name {
+            background-color: var(--surface-alt);
+            z-index: 165;
+        }
+
+        thead {
+            position: relative;
+            z-index: 140;
+        }
+
+        thead tr:first-child th {
+            top: 0;
+            z-index: 170;
+        }
+
+        thead tr:first-child th:not(.col-sr):not(.col-roll):not(.col-name) {
+            z-index: 168;
+        }
+
+        thead tr.totals-header-row th:not(.col-sr):not(.col-roll):not(.col-name) {
+            z-index: 155;
+        }
+
+        tbody td.col-sr,
+        tbody td.col-roll,
+        tbody td.col-name {
+            z-index: 10;
+            background-color: var(--surface-alt);
+        }
+
+        .sort-arrow-only {
+            padding-left: 0;
+            padding-right: 0;
+            text-align: center;
+            width: var(--col-sr-width);
+            min-width: var(--col-sr-width);
+        }
+
+        .sort-arrow-only .sort-indicator {
+            margin-left: 0;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th.sortable .sort-indicator {
+            margin-left: 0.35rem;
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        th.sortable .sort-indicator::after {
+            content: "↕";
+        }
+
+        th.sortable[data-sort-dir="asc"] .sort-indicator::after {
+            content: "▲";
+        }
+
+        th.sortable[data-sort-dir="desc"] .sort-indicator::after {
+            content: "▼";
+        }
+
+        .stats-summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background-color: var(--surface-alt);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stats-summary .label {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem auto;
+            max-width: 95%;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: opacity 0.3s ease;
+        }
+
+        #update-message-area {
+            min-height: 0;
+            transition: min-height 0.3s ease;
+        }
+
+        #update-message-area:not(:empty) {
+            min-height: 3.5rem;
+        }
+
+        .totals-header-row th {
+            background-color: var(--surface-alt) !important;
+            border-bottom: 2px solid var(--primary);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .daily-total-header {
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: #bbf7d0;
+        }
+
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.18);
+            color: #fecdd3;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .update-spinner {
+            display: inline-block;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .live-title {
+            color: var(--text);
+        }
+
+        .live-subtitle {
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body class="p-4 dark">
+    <script>
+        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+    </script>
+
+
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">☀️</button>
+
+    <div class="table-container">
+        <div class="p-4 flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <!-- Go back to the correct portal -->
+                <a href="{{ url_for('teacher.teacher_portal' if is_teacher_view else 'student.student_portal') }}"
+                    class="back-link">
+                    &larr; Back to Portal
+                </a>
+                <h1 class="text-2xl font-bold live-title">Live Report: {{ subject.name }}</h1>
+                <p class="text-sm live-subtitle">{{ subject.code }}</p>
+            </div>
+            <div class="stats-summary" aria-live="polite">
+                <span class="label">Total Days</span>
+                <span>{{ total_days }}</span>
+            </div>
+            <!-- Download Button for Teachers -->
+            {% if is_teacher_view %}
+            <a href="{{ url_for('attendance.download_report', subject_id=subject.id) }}" class="btn-download">Download as Excel</a>
+            {% endif %}
+        </div>
+
+        <!-- Message Area for Updates -->
+        <div id="update-message-area" class="px-4"></div>
+
+        <div class="table-scroll">
+            <table style="--col-name-width: {{ name_col_width }}px;">
+                <thead>
+                    <tr>
+                        <!-- Sticky headers -->
+                        <th class="col-sr sortable sort-arrow-only" data-sort-key="sr" data-sort-type="number" aria-label="Sort by order"><span class="sort-indicator" aria-hidden="true"></span></th>
+                        <th class="col-roll sortable" data-sort-key="roll" data-sort-type="string">Roll No.<span class="sort-indicator"></span></th>
+                        <th class="col-name sortable" data-sort-key="name" data-sort-type="string">Name<span class="sort-indicator"></span></th>
+                        <th class="stats-col status-cell status-present col-present sortable" data-sort-key="present" data-sort-type="number">P<span class="sort-indicator"></span></th>
+                        <th class="stats-col status-cell status-absent col-absent sortable" data-sort-key="absent" data-sort-type="number">A<span class="sort-indicator"></span></th>
+                        <th class="stats-col status-cell status-medical_leave col-ml sortable" data-sort-key="medical_leave" data-sort-type="number">ML<span class="sort-indicator"></span></th>
+                        <th class="stats-col status-cell status-other_leave col-ol sortable" data-sort-key="other_leave" data-sort-type="number">OL<span class="sort-indicator"></span></th>
+                        <th class="percentage-col status-cell status-percent sortable" data-sort-key="percentage" data-sort-type="number" title="Percentage Absence">% Abs<span class="sort-indicator"></span></th>
+                        <!-- Loop through unique dates for headers -->
+                        {% for date_str in unique_dates %}
+                        <th>{{ date_str }}</th>
+                        {% endfor %}
+                    </tr>
+                    <tr class="totals-header-row">
+                        <th class="col-sr"></th>
+                        <th class="col-roll"></th>
+                        <th class="col-name daily-total-label">Daily Totals →</th>
+                        <th class="col-present"></th>
+                        <th class="col-absent"></th>
+                        <th class="col-ml"></th>
+                        <th class="col-ol"></th>
+                        <th class="col-percent"></th>
+                        {% for date_str in unique_dates %}
+                        <th class="daily-total-header" data-date="{{ date_str }}">
+                            <span class="status-pill status-present">{{ daily_totals[date_str]['present'] }}</span><br>
+                            <span class="status-pill status-absent">{{ daily_totals[date_str]['absent'] }}</span><br>
+                            <span class="status-pill status-medical_leave">ML {{ daily_totals[date_str]['medical_leave'] }}</span><br>
+                            <span class="status-pill status-other_leave">OL {{ daily_totals[date_str]['other_leave'] }}</span>
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through students -->
+                    {% for student in students_data %}
+                    <tr data-original-index="{{ loop.index }}" data-total-marked="{{ student.total_marked }}"
+                        data-percentage="{{ student.percentage }}">
+                        <!-- Sticky data cells -->
+                        <td class="col-sr" data-sort="sr" data-sort-value="{{ loop.index }}">{{ loop.index }}</td>
+                        <td class="col-roll" data-sort="roll" data-sort-value="{{ student.roll_number }}">{{ student.roll_number }}</td>
+                        <td class="col-name" data-sort="name" data-sort-value="{{ student.name }}">{{ student.name }}</td>
+                        <td class="stats-col status-cell status-present col-present" data-stat="present" data-sort="present" data-sort-value="{{ student.present_count }}">{{ student.present_count }}</td>
+                        <td class="stats-col status-cell status-absent col-absent" data-stat="absent" data-sort="absent" data-sort-value="{{ student.absent_count }}">{{ student.absent_count }}</td>
+                        <td class="stats-col status-cell status-medical_leave col-ml" data-stat="medical_leave" data-sort="medical_leave" data-sort-value="{{ student.medical_leave_count }}">{{ student.medical_leave_count }}</td>
+                        <td class="stats-col status-cell status-other_leave col-ol" data-stat="other_leave" data-sort="other_leave" data-sort-value="{{ student.other_leave_count }}">{{ student.other_leave_count }}</td>
+                        <td class="percentage-col status-cell status-percent" data-stat="percentage" data-sort="percentage" data-sort-value="{{ student.percentage }}">{{ student.percentage }}%</td>
+                        <!-- Loop through dates again for this student's status -->
+                        {% for date_str in unique_dates %}
+                            {% set status = student.attendance.get(date_str, '-') %}
+                            {% set source = student.attendance_source.get(date_str) %}
+                        <td class="attendance-status-cell {% if source == 'manual' and status != '-' %}manual-outline{% endif %}">
+                            {% if is_teacher_view %}
+                            <!-- Editable Dropdown for Teacher -->
+                            <div class="attendance-cell">
+                                <select class="status-select status-{{ status if status != '-' else 'na' }}" data-roll="{{ student.roll_number }}"
+                                    data-date="{{ date_str }}" onchange="updateStatus(this)">
+                                    <!-- Add a '-' option for "Not Marked" -->
+                                    <option value="-" {% if status=='-' %}selected{% endif %} class="status-na">-</option>
+                                    <option value="present" {% if status=='present' %}selected{% endif %}
+                                        class="status-present">P</option>
+                                    <option value="absent" {% if status=='absent' %}selected{% endif %}
+                                        class="status-absent">A</option>
+                                    <option value="medical_leave" {% if status=='medical_leave' %}selected{% endif %}
+                                        class="status-medical_leave">ML</option>
+                                    <option value="other_leave" {% if status=='other_leave' %}selected{% endif %}
+                                        class="status-other_leave">OL</option>
+                                </select>
+                                <span class="update-spinner hidden"></span>
+                            </div>
+                            {% else %}
+                            <!-- Read-only view for Student -->
+                            <div class="attendance-readonly">
+                                <span class="status-pill status-{{ status|lower if status != '-' else 'na' }}">
+                                    {{ 'P' if status == 'present' else 'A' if status == 'absent' else 'ML' if status == 'medical_leave' else 'OL' if status == 'other_leave' else '-' }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not students_data %}
+        <p class="text-center text-gray-500 p-6">No students are enrolled in this subject, or no attendance has been
+            taken.</p>
+        {% endif %}
+    </div>
+
+    <!-- Define URLs for JavaScript -->
+    <script>
+        const urlForUpdateStatus = "{{ url_for('attendance.update_attendance_status') }}";
+        // FIX: Pass the subject ID from Flask to JavaScript
+        const currentSubjectId = {{ subject.id | tojson }};
+    </script>
+
+    <script>
+        (function () {
+            const body = document.body;
+            const root = document.documentElement;
+            const toggleBtn = document.getElementById('theme-toggle');
+            const saved = localStorage.getItem('theme') || 'dark';
+            applyTheme(saved);
+            toggleBtn?.addEventListener('click', () => {
+                const next = body.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(next);
+            });
+            function applyTheme(mode) {
+                body.classList.remove('light', 'dark');
+                body.classList.add(mode);
+                root.style.colorScheme = mode === 'dark' ? 'dark' : 'light';
+                localStorage.setItem('theme', mode);
+                if (toggleBtn) toggleBtn.textContent = mode === 'dark' ? '☀️' : '🌙';
+            }
+        })();
+    </script>
+
+    <script>
+        (function () {
+            const table = document.querySelector('.table-scroll table');
+            if (!table) return;
+
+            const headerRow = table.querySelector('thead tr:first-child');
+            const tbody = table.querySelector('tbody');
+            const sortableHeaders = table.querySelectorAll('th.sortable');
+            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+            const currentSort = { key: 'roll', dir: 'asc', type: 'string' };
+
+            function syncHeaderOffset() {
+                if (!headerRow) return;
+                const height = headerRow.getBoundingClientRect().height;
+                table.style.setProperty('--header-offset', `${height}px`);
+            }
+
+            function scheduleHeaderOffsetSync() {
+                syncHeaderOffset();
+                window.requestAnimationFrame(syncHeaderOffset);
+            }
+
+            function getCellValue(row, key, type) {
+                const cell = row.querySelector(`[data-sort="${key}"]`);
+                if (!cell) return type === 'number' ? 0 : '';
+                const raw = cell.dataset.sortValue ?? cell.textContent.trim();
+                if (type === 'number') {
+                    const parsed = parseFloat(raw);
+                    return Number.isNaN(parsed) ? 0 : parsed;
+                }
+                return raw;
+            }
+
+            function updateSortIndicators(activeKey, dir) {
+                sortableHeaders.forEach(th => {
+                    const isActive = th.dataset.sortKey === activeKey;
+                    if (isActive) {
+                        th.dataset.sortDir = dir;
+                        th.setAttribute('aria-sort', dir === 'asc' ? 'ascending' : 'descending');
+                    } else {
+                        th.removeAttribute('data-sort-dir');
+                        th.setAttribute('aria-sort', 'none');
+                    }
+                });
+            }
+
+            function updateSrNumbers() {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.forEach((row, index) => {
+                    const cell = row.querySelector('[data-sort="sr"]');
+                    if (cell) cell.textContent = index + 1;
+                });
+            }
+
+            function sortRows(key = currentSort.key, type = currentSort.type, dir = currentSort.dir) {
+                if (!tbody || !key) return;
+                currentSort.key = key;
+                currentSort.type = type;
+                currentSort.dir = dir;
+
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort((a, b) => {
+                    const aVal = getCellValue(a, key, type);
+                    const bVal = getCellValue(b, key, type);
+                    let result;
+                    if (type === 'number') {
+                        result = aVal - bVal;
+                    } else {
+                        result = collator.compare(String(aVal), String(bVal));
+                    }
+
+                    if (result === 0) {
+                        const aIndex = parseInt(a.dataset.originalIndex || '0', 10) || 0;
+                        const bIndex = parseInt(b.dataset.originalIndex || '0', 10) || 0;
+                        return aIndex - bIndex;
+                    }
+
+                    return dir === 'asc' ? result : -result;
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+                updateSrNumbers();
+                updateSortIndicators(key, dir);
+            }
+
+            function toggleSort(key, type) {
+                const nextDir = currentSort.key === key && currentSort.dir === 'asc' ? 'desc' : 'asc';
+                sortRows(key, type, nextDir);
+            }
+
+            sortableHeaders.forEach(th => {
+                th.addEventListener('click', () => {
+                    toggleSort(th.dataset.sortKey, th.dataset.sortType || 'string');
+                });
+            });
+
+            syncHeaderOffset();
+            updateSortIndicators(currentSort.key, currentSort.dir);
+            sortRows(currentSort.key, currentSort.type, currentSort.dir);
+
+            window.reportTableSort = {
+                applyCurrentSort: () => sortRows(currentSort.key, currentSort.type, currentSort.dir),
+                refreshHeaderOffset: syncHeaderOffset,
+                getState: () => ({ ...currentSort }),
+            };
+
+            window.addEventListener('load', scheduleHeaderOffsetSync);
+            window.addEventListener('resize', scheduleHeaderOffsetSync);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(scheduleHeaderOffsetSync).catch(() => {});
+            }
+        })();
+    </script>
+
+    {% if is_teacher_view %}
+    <script>
+        const messageArea = document.getElementById('update-message-area');
+
+        // Store old status for each select element on page load
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.dataset.oldStatus = select.value;
+            applySelectStatusClass(select);
+        });
+
+        function applySelectStatusClass(selectElement) {
+            if (!selectElement) return;
+            selectElement.classList.remove(
+                'status-present',
+                'status-absent',
+                'status-medical_leave',
+                'status-other_leave',
+                'status-na'
+            );
+            const value = selectElement.value || '-';
+            const className = value === '-' ? 'status-na' : `status-${value}`;
+            selectElement.classList.add(className);
+        }
+
+        async function updateStatus(selectElement) {
+            const oldStatus = selectElement.dataset.oldStatus;
+            const rollNumber = selectElement.dataset.roll;
+            const date = selectElement.dataset.date;
+            const newStatus = selectElement.value;
+            const cell = selectElement.closest('.attendance-cell');
+            const spinner = cell?.querySelector('.update-spinner');
+
+            // Disable select, show local spinner (don't clear message yet)
+            selectElement.disabled = true;
+            if (spinner) spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(urlForUpdateStatus, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                        // Flask-Login handles session cookie automatically
+                    },
+                    body: JSON.stringify({
+                        roll_number: rollNumber,
+                        date: date,
+                        status: newStatus,
+                        subject_id: currentSubjectId // <-- THE FIX
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage(messageArea, result.message || 'Update successful!', false);
+                    updateRowStatistics(selectElement, oldStatus, newStatus);
+                    updateManualOutline(selectElement, newStatus, result.attendance_source === 'manual');
+                    applySelectStatusClass(selectElement);
+                    window.reportTableSort?.applyCurrentSort?.();
+                    selectElement.dataset.oldStatus = newStatus;
+                } else {
+                    selectElement.value = oldStatus;
+                    applySelectStatusClass(selectElement);
+                    throw new Error(result.error || 'Update failed.');
+                }
+
+            } catch (error) {
+                console.error("Update error:", error);
+                showMessage(messageArea, `Error: ${error.message}`, true);
+            } finally {
+                selectElement.disabled = false; // Re-enable dropdown
+                if (spinner) spinner.classList.add('hidden'); // Hide local spinner
+            }
+        }
+
+        function updateRowStatistics(selectElement, oldStatus, newStatus) {
+            const row = selectElement.closest('tr');
+            if (!row) return;
+            const presentCell = row.querySelector('[data-stat="present"]');
+            const absentCell = row.querySelector('[data-stat="absent"]');
+            const medicalCell = row.querySelector('[data-stat="medical_leave"]');
+            const otherCell = row.querySelector('[data-stat="other_leave"]');
+            const percentageCell = row.querySelector('[data-stat="percentage"]');
+
+            const getCount = (cell) => {
+                const raw = cell?.dataset.sortValue ?? cell?.textContent ?? '0';
+                const parsed = parseInt(raw, 10);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+
+            let presentCount = getCount(presentCell);
+            let absentCount = getCount(absentCell);
+            let medicalLeaveCount = getCount(medicalCell);
+            let otherLeaveCount = getCount(otherCell);
+
+            if (oldStatus === 'present') presentCount--;
+            else if (oldStatus === 'absent') absentCount--;
+            else if (oldStatus === 'medical_leave') medicalLeaveCount--;
+            else if (oldStatus === 'other_leave') otherLeaveCount--;
+
+            if (newStatus === 'present') presentCount++;
+            else if (newStatus === 'absent') absentCount++;
+            else if (newStatus === 'medical_leave') medicalLeaveCount++;
+            else if (newStatus === 'other_leave') otherLeaveCount++;
+
+            const totalMarked = presentCount + absentCount + medicalLeaveCount + otherLeaveCount;
+            // User requested % absence: absent / total
+            const percentage = totalMarked > 0 ? ((absentCount / totalMarked) * 100).toFixed(1) : '0.0';
+
+            if (presentCell) {
+                presentCell.textContent = presentCount;
+                presentCell.dataset.sortValue = presentCount;
+            }
+            if (absentCell) {
+                absentCell.textContent = absentCount;
+                absentCell.dataset.sortValue = absentCount;
+            }
+            if (medicalCell) {
+                medicalCell.textContent = medicalLeaveCount;
+                medicalCell.dataset.sortValue = medicalLeaveCount;
+            }
+            if (otherCell) {
+                otherCell.textContent = otherLeaveCount;
+                otherCell.dataset.sortValue = otherLeaveCount;
+            }
+            if (percentageCell) {
+                percentageCell.textContent = percentage + '%';
+                percentageCell.dataset.sortValue = percentage;
+            }
+
+            updateDailyTotals(selectElement.dataset.date, oldStatus, newStatus);
+            row.dataset.totalMarked = totalMarked;
+            row.dataset.percentage = percentage;
+        }
+
+        function updateManualOutline(selectElement, status, isManual) {
+            const cell = selectElement.closest('td');
+            if (!cell) return;
+            if (status !== '-' && isManual) {
+                cell.classList.add('manual-outline');
+            } else {
+                cell.classList.remove('manual-outline');
+            }
+        }
+
+        function updateDailyTotals(dateStr, oldStatus, newStatus) {
+            const totalCell = document.querySelector(`.daily-total-header[data-date="${dateStr}"]`);
+            if (!totalCell) return;
+
+            const presentSpan = totalCell.querySelector('.status-present');
+            const absentSpan = totalCell.querySelector('.status-absent');
+            const medicalSpan = totalCell.querySelector('.status-medical_leave');
+            const otherSpan = totalCell.querySelector('.status-other_leave');
+            if (!presentSpan || !absentSpan || !medicalSpan || !otherSpan) return;
+
+            const readCount = (text) => {
+                const parsed = parseInt(String(text).replace(/^\D+/, ''), 10);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            };
+
+            let presentCount = readCount(presentSpan.textContent);
+            let absentCount = readCount(absentSpan.textContent);
+            let medicalCount = readCount(medicalSpan.textContent);
+            let otherCount = readCount(otherSpan.textContent);
+
+            if (oldStatus === 'present') presentCount--;
+            else if (oldStatus === 'absent') absentCount--;
+            else if (oldStatus === 'medical_leave') medicalCount--;
+            else if (oldStatus === 'other_leave') otherCount--;
+
+            if (newStatus === 'present') presentCount++;
+            else if (newStatus === 'absent') absentCount++;
+            else if (newStatus === 'medical_leave') medicalCount++;
+            else if (newStatus === 'other_leave') otherCount++;
+
+            presentSpan.textContent = String(presentCount);
+            absentSpan.textContent = String(absentCount);
+            medicalSpan.textContent = 'ML ' + medicalCount;
+            otherSpan.textContent = 'OL ' + otherCount;
+        }
+
+        function showMessage(element, message, isError = false) {
+            if (!element) return;
+            const alertClass = isError ? 'alert-danger' : 'alert-success';
+            let existingAlert = element.querySelector('.alert');
+            if (existingAlert) {
+                // Just update text and class - no remove/re-add
+                existingAlert.textContent = message;
+                existingAlert.className = 'alert ' + alertClass;
+            } else {
+                // Create alert only if none exists
+                element.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+            }
+        }
+
+    </script>
+    {% endif %}
+
+</body>
+
+</html>

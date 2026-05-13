@@ -1,0 +1,13 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+psycopg2-binary
+python-dotenv
+yagmail
+Werkzeug
+openpyxl
+numpy
+Pillow
+face_recognition
+opencv-python-headless
+Flask-WTF
