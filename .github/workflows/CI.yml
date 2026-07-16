@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -----------------------------------------------------------
+  # Fast checks: syntax + linting. No heavy deps installed here.
+  # -----------------------------------------------------------
+  lint:
+    name: Lint & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"   # matches your Dockerfile
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      # Compiles every .py file — catches syntax errors without
+      # needing to install face_recognition / opencv / etc.
+      - name: Check for syntax errors
+        run: python -m compileall app.py app config.py create_teacher.py create_demo_data.py
+
+      # Style/lint. Soft-fails for now so it won't block you while
+      # you clean up. Remove continue-on-error to make it required.
+      - name: Lint with Ruff
+        run: ruff check . --output-format=github
+        continue-on-error: true
+
+  # -----------------------------------------------------------
+  # Thorough check: build the actual Docker image end-to-end.
+  # This is the one that catches broken builds (dlib, deps, etc.).
+  # -----------------------------------------------------------
+  docker-build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: classcam:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
