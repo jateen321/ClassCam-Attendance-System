@@ -52,3 +52,17 @@ COPY . .
 EXPOSE 8080
 
 CMD ["python", "app.py"]
+
+
+# Test image used by CI. Production images continue to stop at the runtime stage.
+FROM runtime AS test
+
+RUN pip install --no-cache-dir -r requirements-dev.txt
+
+CMD ["python", "-m", "pytest"]
+
+
+# Keep the default/final image free of development-only dependencies.
+FROM runtime AS production
+
+CMD ["python", "app.py"]
