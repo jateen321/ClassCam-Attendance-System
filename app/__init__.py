@@ -9,7 +9,7 @@ unauthorized handler), and initializes database extensions.
 
 from flask import Flask, request, redirect, url_for, flash, jsonify
 from flask_wtf.csrf import CSRFError
-from app.extensions import db, login_manager, csrf
+from app.extensions import db, migrate, login_manager, csrf, limiter
 from app.models import Teacher, Student
 from config import Config
 import os
@@ -21,12 +21,15 @@ def create_app(config_class=Config):
                 template_folder='../templates',
                 static_folder='../static')
     app.config.from_object(config_class)
+    Config.validate_security_configuration(app)
 
     # ── Step 1: Connect extensions to the app ──────────────────────────────
     # This is the key step — extensions were created in extensions.py with NO app.
     # Now we connect them via init_app(). This is what breaks the circular import.
     db.init_app(app)
+    migrate.init_app(app, db)
     csrf.init_app(app)
+    limiter.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'teacher.teacher_portal'
     login_manager.login_message_category = 'info'
@@ -52,6 +55,12 @@ def create_app(config_class=Config):
     app.register_blueprint(teacher_bp)
     app.register_blueprint(student_bp)
     app.register_blueprint(attendance_bp)
+
+    @app.cli.command('seed-admin')
+    def seed_admin_command():
+        """Create or synchronize the configured default administrator."""
+        from app.utils.db_helpers import ensure_default_admin
+        ensure_default_admin(app)
 
     def _wants_json_error():
         # API endpoints in this app use form-data POSTs + fetch; make failures JSON-safe.

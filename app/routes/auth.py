@@ -7,14 +7,14 @@ Blueprint name: 'auth'
 url_for prefix: url_for('auth.teacher_login'), etc.
 """
 
-import random
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, request, redirect, url_for, flash, session, jsonify
 from flask_login import login_user
 from sqlalchemy import func
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Teacher
 from app.utils.email import send_email, send_email_async
+from app.utils.security import generate_otp, otp_matches
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -39,6 +39,7 @@ def _find_teacher_by_username(raw_identifier):
 
 
 @auth_bp.route("/login", methods=['POST'])
+@limiter.limit("5 per minute")
 def teacher_login():
     teacher, normalized_username = _find_teacher_by_username(request.form.get('username'))
     password = request.form.get('password')
@@ -59,6 +60,7 @@ def teacher_login():
 
 
 @auth_bp.route("/teacher-register", methods=['POST'])
+@limiter.limit("5 per hour")
 def teacher_register():
     try:
         username = _normalize_teacher_identifier(request.form.get('reg_username'))
@@ -106,6 +108,7 @@ def teacher_register():
 
 
 @auth_bp.route("/teacher-request-password-reset", methods=['POST'])
+@limiter.limit("3 per 10 minutes")
 def teacher_request_password_reset():
     try:
         email = (request.form.get('email') or '').strip().lower()
@@ -118,7 +121,7 @@ def teacher_request_password_reset():
         if not teacher:
             return jsonify({'message': 'If an account with that email exists, a reset code has been sent.'})
 
-        otp = str(random.randint(100000, 999999))
+        otp = generate_otp()
         teacher.otp = otp
         teacher.otp_generated_at = datetime.now(timezone.utc)
 
@@ -135,6 +138,7 @@ def teacher_request_password_reset():
 
 
 @auth_bp.route("/teacher-reset-password", methods=['POST'])
+@limiter.limit("5 per 10 minutes")
 def teacher_reset_password():
     try:
         email = (request.form.get('email') or '').strip().lower()
@@ -151,7 +155,7 @@ def teacher_reset_password():
             return jsonify({'error': 'Invalid email or OTP.'}), 400
         if teacher.otp is None or teacher.otp_generated_at is None:
             return jsonify({'error': 'Invalid or expired OTP.'}), 400
-        if teacher.otp != otp_attempt:
+        if not otp_matches(teacher.otp, otp_attempt):
             return jsonify({'error': 'Invalid OTP provided.'}), 400
         if (datetime.now(timezone.utc) - teacher.otp_generated_at) > timedelta(minutes=10):
             teacher.otp = None

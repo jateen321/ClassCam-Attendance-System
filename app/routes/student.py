@@ -10,7 +10,6 @@ url_for prefix: url_for('student.student_portal'), etc.
 
 import os
 import uuid
-import random
 import traceback
 import logging
 import json
@@ -22,7 +21,7 @@ import numpy as np
 import face_recognition
 from sqlalchemy import desc, func
 from werkzeug.utils import secure_filename
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Student, Subject, SubjectStaff, AttendanceRecord, BoundingBox, Photo, AttendanceStatus
 from app.utils.attendance_review import (
     IDENTIFICATION_TYPE_USER_ADDED,
@@ -38,6 +37,7 @@ from app.utils.attendance_review import (
 from app.utils.decorators import require_student
 from app.utils.email import send_email
 from app.utils.face import face_executor
+from app.utils.security import generate_otp, otp_matches
 
 logger = logging.getLogger(__name__)
 student_bp = Blueprint('student', __name__)
@@ -214,6 +214,7 @@ def student_portal():
 
 
 @student_bp.route("/student-register", methods=['POST'])
+@limiter.limit("5 per hour")
 def student_register():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -232,7 +233,7 @@ def student_register():
         if Student.query.filter_by(email=email).first():
             return jsonify({'error': 'Email exists.'}), 409
 
-        otp = str(random.randint(100000, 999999))
+        otp = generate_otp()
         student = Student(roll_number=roll, name=name, email=email,
                           otp=otp, otp_generated_at=datetime.now(timezone.utc))
         student.set_password(pwd)
@@ -251,6 +252,7 @@ def student_register():
 
 
 @student_bp.route("/student-login", methods=['POST'])
+@limiter.limit("5 per minute")
 def student_login():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -275,6 +277,7 @@ def student_login():
 
 
 @student_bp.route("/verify-otp", methods=['POST'])
+@limiter.limit("5 per 10 minutes")
 def verify_otp():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -286,7 +289,7 @@ def verify_otp():
             return jsonify({'error': 'Student not found.'}), 404
         if student.otp is None:
             return jsonify({'error': 'No pending/expired OTP.'}), 400
-        if student.otp != otp_attempt:
+        if not otp_matches(student.otp, otp_attempt):
             return jsonify({'error': 'Invalid OTP.'}), 400
         if student.otp_generated_at is None or (datetime.now(timezone.utc) - student.otp_generated_at) > timedelta(minutes=10):
             student.otp = None; student.otp_generated_at = None; db.session.commit()
@@ -303,6 +306,7 @@ def verify_otp():
 
 
 @student_bp.route("/resend-otp", methods=['POST'])
+@limiter.limit("3 per 10 minutes")
 def resend_otp():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -312,7 +316,7 @@ def resend_otp():
         student, _ = _find_student_by_roll(roll)
         if not student:
             return jsonify({'error': 'Student not found.'}), 404
-        new_otp = str(random.randint(100000, 999999))
+        new_otp = generate_otp()
         if context == 'register':
             subj = "Verify Email (Resend)"
             body = f"Hi {student.name},\nYour new verification code is: {new_otp}\nExpires in 10 minutes."
@@ -334,6 +338,7 @@ def resend_otp():
 
 
 @student_bp.route("/request-password-reset-otp", methods=['POST'])
+@limiter.limit("3 per 10 minutes")
 def request_password_reset_otp():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -342,7 +347,7 @@ def request_password_reset_otp():
         student, _ = _find_student_by_roll(roll)
         if not student:
             return jsonify({'message': 'If account exists, code sent.'})
-        otp = str(random.randint(100000, 999999))
+        otp = generate_otp()
         student.otp = otp
         student.otp_generated_at = datetime.now(timezone.utc)
         if not send_email(student.email, "Password Reset Code",
@@ -357,6 +362,7 @@ def request_password_reset_otp():
 
 
 @student_bp.route("/reset-password-with-otp", methods=['POST'])
+@limiter.limit("5 per 10 minutes")
 def reset_password_with_otp():
     try:
         roll = _normalize_roll_input(request.form.get('roll_number'))
@@ -369,7 +375,7 @@ def reset_password_with_otp():
         student, _ = _find_student_by_roll(roll)
         if not student or student.otp is None:
             return jsonify({'error': 'Invalid Roll/OTP.'}), 400
-        if student.otp != otp_attempt:
+        if not otp_matches(student.otp, otp_attempt):
             return jsonify({'error': 'Invalid OTP.'}), 400
         if student.otp_generated_at is None or (datetime.now(timezone.utc) - student.otp_generated_at) > timedelta(minutes=10):
             student.otp = None; student.otp_generated_at = None; db.session.commit()
@@ -383,6 +389,7 @@ def reset_password_with_otp():
 
 
 @student_bp.route("/request-update-otp", methods=['POST'])
+@limiter.limit("3 per 10 minutes")
 @login_required
 @require_student
 def request_update_otp():
@@ -391,7 +398,7 @@ def request_update_otp():
         if not student:
             logout_user()
             return jsonify({'error': 'Student not found.'}), 404
-        otp = str(random.randint(100000, 999999))
+        otp = generate_otp()
         if send_email(student.email, "Profile Update Code",
                       f"Hi {student.name},\nYour profile update code is: {otp}\nExpires in 10 minutes."):
             student.otp = otp
@@ -406,6 +413,7 @@ def request_update_otp():
 
 
 @student_bp.route("/verify-update-otp", methods=['POST'])
+@limiter.limit("5 per 10 minutes")
 @login_required
 @require_student
 def verify_update_otp():
@@ -418,7 +426,7 @@ def verify_update_otp():
             logout_user(); return jsonify({'error': 'Student not found.'}), 404
         if student.otp is None:
             return jsonify({'error': 'Invalid/expired OTP.'}), 400
-        if student.otp != otp_attempt:
+        if not otp_matches(student.otp, otp_attempt):
             return jsonify({'error': 'Invalid OTP.'}), 400
         if student.otp_generated_at is None or (datetime.now(timezone.utc) - student.otp_generated_at) > timedelta(minutes=10):
             student.otp = None; student.otp_generated_at = None; db.session.commit()

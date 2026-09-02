@@ -55,7 +55,13 @@ Create `.env` in the repository root.
 
 ```env
 # Flask
-SECRET_KEY=change_this_to_a_strong_secret
+APP_ENV=development
+# Generate with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+SECRET_KEY=replace_with_a_unique_secret_at_least_32_characters_long
+
+# Rate limiting. `memory://` is suitable only for one local process.
+# In production, use a shared Redis URI, for example redis://redis:6379/0.
+RATELIMIT_STORAGE_URI=memory://
 
 # Database
 DB_NAME=attendance_db
@@ -64,7 +70,7 @@ DB_PASS=postgres
 DB_HOST=db
 DB_PORT=5432
 
-# Optional: seed/sync default admin at startup
+# Optional: seed/sync default admin
 DEFAULT_ADMIN_EMAIL=admin@iitj.ac.in
 DEFAULT_ADMIN_USERNAME=admin
 DEFAULT_ADMIN_PASSWORD=change_this_admin_password
@@ -77,6 +83,11 @@ SENDER_PASSWORD=your_app_password
 Notes:
 - Use app passwords for email providers that require them.
 - Do not commit real credentials.
+- Set `APP_ENV=production` when deploying. Production refuses to start unless
+  `SECRET_KEY` is set to a non-placeholder value with at least 32 characters.
+- Production deployments running multiple Gunicorn workers or instances should
+  set `RATELIMIT_STORAGE_URI` to a shared Redis service; in-memory limits are
+  per process.
 
 ### 3. Prepare Local Directories
 
@@ -96,13 +107,57 @@ openssl req -x509 -newkey rsa:4096 -nodes \
 
 For LAN/mobile testing, replace `CN=localhost` with your machine IP.
 
-### 5. Start Services
+### 5. Start Development Services
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-### 6. Access the App
+The development stack runs Flask's reloader with the source tree mounted into the
+container. Open `http://localhost:8080`; pgAdmin is available at
+`http://localhost:8081`.
+
+For production, use the separate Gunicorn + Nginx stack. Keep production secrets
+in the deployment environment (or a protected `.env` file), set `APP_ENV=production`,
+and use a strong `SECRET_KEY` and shared rate-limit storage:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+The production web container has no source bind mount and runs Gunicorn. Nginx is
+the public entrypoint at `https://localhost:11000` (and redirects HTTP on port 80).
+The production pgAdmin service is disabled by default; enable it only when needed:
+
+```bash
+docker compose -f docker-compose.prod.yml --profile admin up -d adminer
+```
+
+### 6. Apply Database Migrations
+
+Apply the versioned schema before using the application:
+
+```bash
+docker compose -f docker-compose.dev.yml exec web flask --app app db upgrade
+docker compose -f docker-compose.dev.yml exec web flask --app app seed-admin
+```
+
+For an existing database created before migrations were introduced, back it up,
+verify that it matches the current models, then mark it as the initial revision
+without rerunning table creation:
+
+```bash
+docker compose -f docker-compose.dev.yml exec web flask --app app db stamp head
+```
+
+After changing models, generate, review, and apply a new migration:
+
+```bash
+docker compose -f docker-compose.dev.yml exec web flask --app app db migrate -m "describe schema change"
+docker compose -f docker-compose.dev.yml exec web flask --app app db upgrade
+```
+
+### 7. Access the App
 
 - HTTPS (Nginx TLS): `https://localhost:11000`
 - HTTP entrypoint (redirect configured): `http://localhost`
@@ -114,11 +169,12 @@ Because certificates are self-signed in local setups, browser trust warnings are
 
 Preferred path:
 - Set `DEFAULT_ADMIN_EMAIL`, `DEFAULT_ADMIN_USERNAME`, and `DEFAULT_ADMIN_PASSWORD` in `.env`.
-- On app startup, default admin is created/synchronized automatically.
+- After migrations are applied, run `docker compose -f docker-compose.dev.yml exec web flask --app app seed-admin`
+  (or use the production Compose file when deploying).
 
 Fallback path:
 ```bash
-docker compose exec web python create_teacher.py
+docker compose -f docker-compose.dev.yml exec web python create_teacher.py
 ```
 
 ## Common Workflows
@@ -140,13 +196,17 @@ docker compose exec web python create_teacher.py
 Useful commands:
 
 ```bash
-# Rebuild and restart
+# Rebuild and restart the development stack
 
-docker compose up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 
 # View logs
 
-docker compose logs -f web
+docker compose -f docker-compose.dev.yml logs -f web
+
+# Production equivalents
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml logs -f web
 
 ```
 
@@ -170,7 +230,9 @@ docker compose logs -f web
 - `templates/` - Jinja templates for student/staff/report views
 - `static/` - static assets served by Flask
 - `nginx/` - Nginx configuration
-- `docker-compose.yml` - multi-service local deployment
+- `docker-compose.yml` - legacy all-in-one deployment (kept for compatibility)
+- `docker-compose.dev.yml` - Flask development stack with source mounts
+- `docker-compose.prod.yml` - Gunicorn production stack behind Nginx
 
 ## Notes
 

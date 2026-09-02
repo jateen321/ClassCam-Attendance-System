@@ -24,7 +24,6 @@ from app import create_app
 from app.extensions import db
 from app.models import AttendanceRecord, AttendanceStatus, Student, Subject
 from app.utils.attendance_review import ATTENDANCE_SOURCE_MANUAL, ATTENDANCE_SOURCE_PHOTO
-from app.utils.db_helpers import ensure_default_admin, setup_database
 
 
 DEMO_SUBJECT_CODE = "DEMO-FORMAT-101"
@@ -119,9 +118,6 @@ def main() -> None:
     app = create_app()
 
     with app.app_context():
-        setup_database(app)
-        ensure_default_admin(app)
-
         subject = Subject.query.filter_by(
             code=DEMO_SUBJECT_CODE,
             academic_year=DEMO_ACADEMIC_YEAR,

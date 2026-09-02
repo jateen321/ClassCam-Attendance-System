@@ -1,0 +1,6 @@
+Single-database Alembic configuration for ClassCam.
+
+Use the Flask CLI from the repository root:
+
+    flask --app app db upgrade
+

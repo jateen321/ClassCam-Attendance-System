@@ -1,5 +1,7 @@
 Flask
+gunicorn
 Flask-SQLAlchemy
+Flask-Migrate
 Flask-Login
 psycopg2-binary
 python-dotenv
@@ -11,3 +13,4 @@ Pillow
 face_recognition
 opencv-python-headless
 Flask-WTF
+Flask-Limiter
