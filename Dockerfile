@@ -49,9 +49,12 @@ WORKDIR /app
 # Copy application code
 COPY . .
 
+# Entrypoint runs the DB migrations, then execs Gunicorn
+RUN chmod +x /app/docker-entrypoint.sh
+
 EXPOSE 8080
 
-CMD ["python", "app.py"]
+CMD ["/app/docker-entrypoint.sh"]
 
 
 # Test image used by CI. Production images continue to stop at the runtime stage.
@@ -59,10 +62,13 @@ FROM runtime AS test
 
 RUN pip install --no-cache-dir -r requirements-dev.txt
 
+# Override the entrypoint CMD — tests need neither a database nor a web server.
 CMD ["python", "-m", "pytest"]
 
 
 # Keep the default/final image free of development-only dependencies.
 FROM runtime AS production
 
-CMD ["python", "app.py"]
+# Gunicorn (not the Flask dev server) serves production traffic.
+# Tuning lives in gunicorn.conf.py and is overridable via GUNICORN_* env vars.
+CMD ["/app/docker-entrypoint.sh"]

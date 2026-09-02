@@ -11,3 +11,4 @@ Pillow
 face_recognition
 opencv-python-headless
 Flask-WTF
+gunicorn

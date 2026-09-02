@@ -9,6 +9,7 @@ IMPORTS FROM: extensions.py, models.py (both safe — no circular risk)
 
 import os
 import logging
+import time
 from sqlalchemy import func, text
 import psycopg2
 
@@ -28,6 +29,20 @@ DEFAULT_ADMIN_USERNAME = os.environ.get('DEFAULT_ADMIN_USERNAME') or (
 )
 
 
+def _int_env(name, default):
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _float_env(name, default):
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
 def get_db_connection():
     """Return a raw psycopg2 connection (used for bulk INSERT with execute_batch)."""
     try:
@@ -38,6 +53,40 @@ def get_db_connection():
     except psycopg2.OperationalError as e:
         logger.error(f"DB Connect Error: {e}")
         return None
+
+
+def wait_for_database(max_attempts=None, base_delay=None, max_delay=15.0):
+    """
+    Block until Postgres accepts a connection, or give up after max_attempts.
+
+    In Docker the DB container may still be starting when we run, so retry with
+    exponential backoff instead of crashing on the first refused connection.
+    Returns True once connected, False if every attempt failed.
+
+    Tunable via DB_WAIT_ATTEMPTS / DB_WAIT_DELAY for slower hosts.
+    """
+    if max_attempts is None:
+        max_attempts = _int_env('DB_WAIT_ATTEMPTS', 10)
+    if base_delay is None:
+        base_delay = _float_env('DB_WAIT_DELAY', 1.0)
+
+    delay = base_delay
+    for attempt in range(1, max_attempts + 1):
+        conn = get_db_connection()
+        if conn is not None:
+            conn.close()
+            logger.info(f"Database reachable on attempt {attempt}/{max_attempts}.")
+            return True
+        if attempt == max_attempts:
+            break
+        logger.warning(
+            f"Database not ready (attempt {attempt}/{max_attempts}); retrying in {delay:.0f}s."
+        )
+        time.sleep(delay)
+        delay = min(delay * 2, max_delay)
+
+    logger.error(f"Database unreachable after {max_attempts} attempts.")
+    return False
 
 
 def setup_database(app):

@@ -25,7 +25,7 @@ ClassCam supports end-to-end attendance operations for educational settings:
 
 ## System Architecture
 
-- `web` service: Flask app (`python app.py`)
+- `web` service: Flask app served by Gunicorn (`gunicorn -c gunicorn.conf.py wsgi:app`)
 - `db` service: PostgreSQL 15
 - `nginx` service: reverse proxy + TLS termination
 - `adminer` service: pgAdmin (optional DB administration)
@@ -37,6 +37,7 @@ Persistent data:
 ## Tech Stack
 
 - Backend: Python, Flask, Flask-SQLAlchemy, Flask-Login, Flask-WTF
+- WSGI server: Gunicorn (`gthread` workers)
 - Database: PostgreSQL (JSONB for encodings and box geometry)
 - Computer Vision: `face_recognition`, OpenCV
 - Frontend: Jinja templates, JavaScript, Tailwind CSS
@@ -149,6 +150,27 @@ docker compose up -d --build
 docker compose logs -f web
 
 ```
+
+### Web Server Tuning
+
+On startup the container runs `init_db.py` (schema + admin seed) once, then execs
+Gunicorn. Defaults live in `gunicorn.conf.py` and are overridable in `.env`:
+
+| Variable | Default | Notes |
+| --- | --- | --- |
+| `GUNICORN_WORKERS` | `max(2, CPUs / 2)` | Each worker owns a 2-thread face-recognition pool, so real CPU load is `workers x 2`. |
+| `GUNICORN_THREADS` | `4` | Handlers block on face recognition and SMTP; threads keep the worker responsive. |
+| `GUNICORN_TIMEOUT` | `120` | Raised from Gunicorn's 30s default — multi-photo batches exceed it. |
+| `GUNICORN_LOG_LEVEL` | `info` | |
+| `DB_WAIT_ATTEMPTS` | `10` | `init_db.py` retries with exponential backoff before giving up. |
+| `DB_WAIT_DELAY` | `1.0` | Seconds before the first retry; doubles up to 15s. |
+
+If the database never becomes reachable, `init_db.py` exits non-zero and the
+entrypoint aborts — the container fails fast instead of serving against a
+missing schema.
+
+For local development without Docker, `python app.py` still runs the Flask dev
+server (and initialises the DB first). Do not use it to serve real traffic.
 
 ## Troubleshooting
 

@@ -1,2 +1,6 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Shell scripts must keep LF endings — docker-compose bind-mounts the host copy
+# over /app, and a CRLF shebang makes the Linux container fail to exec it.
+*.sh text eol=lf
